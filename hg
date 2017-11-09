@@ -1,0 +1,92 @@
+#! /usr/bin/ruby
+
+cmd       = ARGV[0]
+argv_size = ARGV.size
+args      = ARGV[1..argv_size]
+
+def instructions
+  puts "
+ ▄▄       ▄▄  ▄▄▄▄▄▄▄▄▄▄▄  ▄▄▄▄▄▄▄▄▄▄▄  ▄▄▄▄▄▄▄▄▄▄▄  ▄         ▄  ▄▄▄▄▄▄▄▄▄▄▄  ▄▄▄▄▄▄▄▄▄▄▄  ▄▄▄▄▄▄▄▄▄▄▄  ▄                  ▄▄▄▄▄▄▄▄▄        ▄▄▄▄
+▐░░▌     ▐░░▌▐░░░░░░░░░░░▌▐░░░░░░░░░░░▌▐░░░░░░░░░░░▌▐░▌       ▐░▌▐░░░░░░░░░░░▌▐░░░░░░░░░░░▌▐░░░░░░░░░░░▌▐░▌                ▐░░░░░░░░░▌     ▄█░░░░▌
+▐░▌░▌   ▐░▐░▌▐░█▀▀▀▀▀▀▀▀▀ ▐░█▀▀▀▀▀▀▀█░▌▐░█▀▀▀▀▀▀▀▀▀ ▐░▌       ▐░▌▐░█▀▀▀▀▀▀▀█░▌ ▀▀▀▀█░█▀▀▀▀ ▐░█▀▀▀▀▀▀▀█░▌▐░▌               ▐░█░█▀▀▀▀▀█░▌   ▐░░▌▐░░▌
+▐░▌▐░▌ ▐░▌▐░▌▐░▌          ▐░▌       ▐░▌▐░▌          ▐░▌       ▐░▌▐░▌       ▐░▌     ▐░▌     ▐░▌       ▐░▌▐░▌               ▐░▌▐░▌    ▐░▌    ▀▀ ▐░░▌
+▐░▌ ▐░▐░▌ ▐░▌▐░█▄▄▄▄▄▄▄▄▄ ▐░█▄▄▄▄▄▄▄█░▌▐░▌          ▐░▌       ▐░▌▐░█▄▄▄▄▄▄▄█░▌     ▐░▌     ▐░█▄▄▄▄▄▄▄█░▌▐░▌               ▐░▌ ▐░▌   ▐░▌       ▐░░▌
+▐░▌  ▐░▌  ▐░▌▐░░░░░░░░░░░▌▐░░░░░░░░░░░▌▐░▌          ▐░▌       ▐░▌▐░░░░░░░░░░░▌     ▐░▌     ▐░░░░░░░░░░░▌▐░▌               ▐░▌  ▐░▌  ▐░▌       ▐░░▌
+▐░▌   ▀   ▐░▌▐░█▀▀▀▀▀▀▀▀▀ ▐░█▀▀▀▀█░█▀▀ ▐░▌          ▐░▌       ▐░▌▐░█▀▀▀▀█░█▀▀      ▐░▌     ▐░█▀▀▀▀▀▀▀█░▌▐░▌               ▐░▌   ▐░▌ ▐░▌       ▐░░▌
+▐░▌       ▐░▌▐░▌          ▐░▌     ▐░▌  ▐░▌          ▐░▌       ▐░▌▐░▌     ▐░▌       ▐░▌     ▐░▌       ▐░▌▐░▌               ▐░▌    ▐░▌▐░▌       ▐░░▌
+▐░▌       ▐░▌▐░█▄▄▄▄▄▄▄▄▄ ▐░▌      ▐░▌ ▐░█▄▄▄▄▄▄▄▄▄ ▐░█▄▄▄▄▄▄▄█░▌▐░▌      ▐░▌  ▄▄▄▄█░█▄▄▄▄ ▐░▌       ▐░▌▐░█▄▄▄▄▄▄▄▄▄      ▐░█▄▄▄▄▄█░█░▌▄  ▄▄▄▄█░░█▄▄▄
+▐░▌       ▐░▌▐░░░░░░░░░░░▌▐░▌       ▐░▌▐░░░░░░░░░░░▌▐░░░░░░░░░░░▌▐░▌       ▐░▌▐░░░░░░░░░░░▌▐░▌       ▐░▌▐░░░░░░░░░░░▌      ▐░░░░░░░░░▌▐░▌▐░░░░░░░░░░░▌
+ ▀         ▀  ▀▀▀▀▀▀▀▀▀▀▀  ▀         ▀  ▀▀▀▀▀▀▀▀▀▀▀  ▀▀▀▀▀▀▀▀▀▀▀  ▀         ▀  ▀▀▀▀▀▀▀▀▀▀▀  ▀         ▀  ▀▀▀▀▀▀▀▀▀▀▀        ▀▀▀▀▀▀▀▀▀  ▀  ▀▀▀▀▀▀▀▀▀▀▀
+"
+  puts "
+
+Open-source Distributed Control System
+
+Authors:
+  *  Jianbo Yuan
+  *  Lele Chen
+  *  Shuwen Zhang
+  *  Shujian Zhao
+
+Usage: ./hg <command>
+Commands:
+  create                Create a new repository in the current directory
+  checkout <version>    Revert to the specified revision
+  add <files>           Add the specified files to the next commit
+  delete <files>        Delete the specified files from the next commit
+  commit <files>        Commit the specified files or all outstanding changes
+  status                Display files changed but not committed
+  history               Display commit history
+  merge <path>          Merge with the repository located at <path>
+  help, -h              Display this information
+  version, -v           Output version and copyright information
+"
+end
+
+if (cmd)
+  if cmd == "create"
+    puts "command not supported"
+
+  elsif cmd == "checkout"
+    puts "command not supported"
+  
+  elsif cmd == "add"
+    puts "command not supported"
+  
+  elsif cmd == "delete"
+    puts "command not supported"
+  
+  elsif cmd == "commit"
+    puts "command not supported"
+  
+  elsif cmd == "stat"
+    puts "command not supported"
+  
+  elsif cmd == "history"
+    puts "command not supported"
+  
+  elsif cmd == "merge"
+    puts "command not supported"
+  
+  elsif cmd == "version" || cmd == "-v"
+      puts "Version: 0.1"
+      puts 'License:
+The MIT License (MIT)
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+'
+      exit
+  elsif cmd == "help" || cmd == "-h"
+      instructions
+      exit
+  else
+    puts "Invalid parameters, please use help or -h to view instructions"
+  end
+
+else
+  puts "Usage: ./hg <command>\nNeeds a command, please use help or -h to view instructions"
+end
