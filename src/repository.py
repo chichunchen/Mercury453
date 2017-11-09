@@ -3,6 +3,8 @@
 from __future__ import print_function
 from __future__ import division
 
+import interfaces
+
 import sys
 
 import unittest
@@ -12,13 +14,8 @@ logging.basicConfig(level=logging.DEBUG)
 
 
 #============================================================================
-class Repository:
-  """ This is the front-end module, being the first point-of-entry for commands
-  	  issued at the command line. The current working directory is used as the
-  	  location for action.
-      
-      uses:
-        Manifest, Revlog
+class RepositoryImpl(interfaces.Repository):
+  """ This is the implementation of the Repository base class.
   """
 
   # External methods
