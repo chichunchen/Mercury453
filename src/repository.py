@@ -14,7 +14,7 @@ logging.basicConfig(level=logging.DEBUG)
 
 
 #============================================================================
-class RepositoryImpl(interfaces.Repository):
+class Repository(interfaces.Repository):
   """ This is the implementation of the Repository base class.
   """
 
