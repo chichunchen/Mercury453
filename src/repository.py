@@ -116,10 +116,11 @@ class RepositoryImpl(Repository):
   
   # External methods
 
+  #------------------------------------------------
   def __init__(self):
     self.path = os.getcwd()
     
-
+  #------------------------------------------------
   def create(self):
     """ Description: initialize current directory as a new repository
         Precondition: current directory is not part of a repository
@@ -128,8 +129,21 @@ class RepositoryImpl(Repository):
         repository;if not, create a new repository here
         Exception: if the current directory is part of an existing repository, fail	
     """
-    pass
+    if os.path.isfile(self.path + '/.repository'):
+      print('\nREPOSITORY ALREADY INITILIAZED...ignoring create\n')
+      return
+    
+    with open(self.path + '/.repository', 'w+') as f:
+      f.close()
 
+    with open(self.path + '/.files_in', 'w+') as f:
+      f.close()
+
+    with open(self.path + '/.files_staged', 'w+') as f:
+      f.close()
+
+
+  #------------------------------------------------
   def checkout(self, revision_str): 
     """ Description: restores the repository directory to how it was at the 
         given revision
@@ -142,6 +156,7 @@ class RepositoryImpl(Repository):
     """
     pass
 
+  #------------------------------------------------
   def commit(self):
     """ Description: commit the specified files or all outstanding changes
         Precondition: files are staged for commit and no argument is provided, 
@@ -153,7 +168,8 @@ class RepositoryImpl(Repository):
         provided, fail
     """
     pass
-
+  
+  #------------------------------------------------
   def add(self, files_list):
     """Description: add the specified files to the next commit
        Precondition: file exists in working directory
@@ -163,6 +179,7 @@ class RepositoryImpl(Repository):
     """ 
     pass
 
+  #------------------------------------------------
   def delete(self, files_list):
     """ Description: remove the specified files from the next commit
         Precondition: file is staged for commit
@@ -172,6 +189,7 @@ class RepositoryImpl(Repository):
     """
     pass
 
+  #------------------------------------------------
   def merge(self, path_str):
     """ Description: merge with the repository located at path.
         Precondition: path contains a valid repository
@@ -185,6 +203,7 @@ class RepositoryImpl(Repository):
     """
     pass
 
+  #------------------------------------------------
   def status(self):
     """ Description: display files changed but not committed
         Precondition: current directory is a repository
@@ -202,6 +221,7 @@ class RepositoryImpl(Repository):
     print("\nREPOSITORY STATUS:\n")
 
     # print files that are staged
+    print("...Files staged:")
     if not os.path.isfile(self.path + '/.files_staged'):
       logging.error('Missing repository file .files_in')
     else:
@@ -210,8 +230,10 @@ class RepositoryImpl(Repository):
 
     
     # print files changed but not staged
+    print("...Files changed but not staged:\n")
 
     # print files that are in repo
+    print("...Files in repo:")
     if not os.path.isfile(self.path + '/.files_in'):
       logging.error('Missing repository file .files_in')
     else:
@@ -220,8 +242,10 @@ class RepositoryImpl(Repository):
     
     
     # print files not tracked
+    print("...Files not tracked:\n")
     
 
+  #------------------------------------------------
   def history(self):
     """ Description: display commit history
         Precondition: current directory is a repository
@@ -233,7 +257,7 @@ class RepositoryImpl(Repository):
     pass	
   
   
-  #-------------------------------------------------------------------------
+  #=======================================================================
   # INTERNAL METHODS
   
   def _parse_repo_file():
