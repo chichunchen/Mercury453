@@ -7,6 +7,7 @@ import revlog
 import manifest
 
 import sys
+import os
 
 import unittest
 import logging
@@ -55,11 +56,11 @@ class Repository():
     pass
 
   def add(self, files_list):
-    """Description: add the specified files to the next commit
-       Precondition: file exists in working directory
-       Postcondition: file is staged for commit
-       Main procedure: add file to list of staged files
-       Exception: if the file does not exist, fail
+    """ Description: add the specified files to the next commit
+        Precondition: file exists in working directory
+        Postcondition: file is staged for commit
+        Main procedure: add file to list of staged files
+        Exception: if the file does not exist, fail
     """ 
     pass
 
@@ -112,8 +113,13 @@ class Repository():
 class RepositoryImpl(Repository):
   """ This is the implementation of the Repository interface base class.
   """
-
+  
   # External methods
+
+  def __init__(self):
+    self.path = os.getcwd()
+    
+
   def create(self):
     """ Description: initialize current directory as a new repository
         Precondition: current directory is not part of a repository
@@ -189,8 +195,32 @@ class RepositoryImpl(Repository):
     display all edited but unstaged files
     Exception: if current directory is not a repository, fail 
     """
-    pass
+    if not os.path.isfile(self.path + '/.repository'):
+      print('\nNOT IN A REPOSITORY...use create\n')
+      return
 
+    print("\nREPOSITORY STATUS:\n")
+
+    # print files that are staged
+    if not os.path.isfile(self.path + '/.files_staged'):
+      logging.error('Missing repository file .files_in')
+    else:
+      with open(self.path + '/.files_staged') as f_in:
+        print(f_in.read())
+
+    
+    # print files changed but not staged
+
+    # print files that are in repo
+    if not os.path.isfile(self.path + '/.files_in'):
+      logging.error('Missing repository file .files_in')
+    else:
+      with open(self.path + '/.files_in') as f_in:
+        print(f_in.read())
+    
+    
+    # print files not tracked
+    
 
   def history(self):
     """ Description: display commit history
@@ -201,6 +231,19 @@ class RepositoryImpl(Repository):
         Exception: if current directory is not a repository, fail
     """
     pass	
+  
+  
+  #-------------------------------------------------------------------------
+  # INTERNAL METHODS
+  
+  def _parse_repo_file():
+    pass
+    """
+    with('.files_in') as f:
+      for line in f:
+        line.split()
+         line[0] == "FILES_IN:"
+    """  
   
 #============================================================================
 class TestRepositoryImpl(unittest.TestCase):
@@ -229,7 +272,10 @@ class TestRepositoryImpl(unittest.TestCase):
         
 #============================================================================
 def do_all():
-  pass
+  r = RepositoryImpl()
+  r.status()
+  r.create()
+  
 
 #=============================================================================
 if __name__ == '__main__':
