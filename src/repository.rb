@@ -9,17 +9,25 @@ module Repository
   # This is the Repository module for top level dvcs functionality.
 
   # External methods
-  def create()
+  def Repository.create()
     # Description: initialize current directory as a new repository
     # Precondition: current directory is not part of a repository
     # Postcondition: current directory part of a new, empty repository
     # Main procedure: determine if the current directory is already a 
     # repository;if not, create a new repository here
     # Exception: if the current directory is part of an existing repository, fail	
+    puts '...create'
+    if File.exist?('.repository')
+      puts 'repository already exists...create ignored'
+    else
+      Dir.mkdir('.repository')
+      FileUtils.touch('.repository/files_in')
+      FileUtils.touch('.repository/files_staged')
+    end
     
   end
 
-  def checkout(revision_str) 
+  def Repository.checkout(revision_str) 
     # Description: restores the repository directory to how it was at the 
     # given revision
     # Precondition: the revision number is valid
@@ -31,7 +39,7 @@ module Repository
     
   end
 
-  def commit()
+  def Repository.commit()
     # Description: commit the specified files or all outstanding changes
     # Precondition: files are staged for commit and no argument is provided, 
     # or no files are staged and some are provided as arguments
@@ -42,7 +50,7 @@ module Repository
     # provided, fail
   end
 
-  def add(files_list)
+  def Repository.add(files_list)
     # Description: add the specified files to the next commit
     # Precondition: file exists in working directory
     # Postcondition: file is staged for commit
@@ -51,7 +59,7 @@ module Repository
     
   end
 
-  def delete(files_list)
+  def Repository.delete(files_list)
     # Description: remove the specified files from the next commit
     # Precondition: file is staged for commit
     # Postcondition: file is not staged for commit
@@ -60,7 +68,7 @@ module Repository
     
   end
 
-  def merge(path_str)
+  def Repository.merge(path_str)
     # Description: merge with the repository located at path.
     # Precondition: path contains a valid repository
     # Postcondition: contents and history of branch present path exist in this
@@ -73,7 +81,7 @@ module Repository
     
   end
 
-  def status()
+  def Repository.status()
     # Description: display files changed but not committed
     # Precondition: current directory is a repository
     # Postcondition: directory contents that have been edited are 
@@ -86,7 +94,7 @@ module Repository
   end
 
 
-  def history()
+  def Repository.history()
     # Description: display commit history
     # Precondition: current directory is a repository
     # Postcondition: display the history of all commits
@@ -95,7 +103,15 @@ module Repository
     # Exception: if current directory is not a repository, fail
     
   end	
+  
+  protected
+  
+  
+  
  
 end
+#============================================================================
+
+
 
 puts "Repository module loaded"
