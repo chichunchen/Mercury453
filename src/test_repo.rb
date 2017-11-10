@@ -14,7 +14,6 @@ class TestRepository < Minitest::Test
     assert_equal(6, 2*3) 
   end
 
-  # out of respect to the readers intelligence comments not added profusely :)
   def test_create
     if File.exist?('.test')
       FileUtils.rm_rf('.test')
@@ -25,6 +24,17 @@ class TestRepository < Minitest::Test
     assert(File.exist?('.repository'))
     assert(File.exist?('.repository/files_in'))
     assert(File.exist?('.repository/files_staged'))
+    FileUtils.rm_rf('.test')
+  end
+
+  def test_status
+    if File.exist?('.test')
+      FileUtils.rm_rf('.test')
+    end
+    Dir.mkdir('.test')
+    Dir.chdir('.test')
+    Repository.create()
+    Repository.status()
     FileUtils.rm_rf('.test')
   end
 
