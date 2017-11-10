@@ -141,9 +141,6 @@ module Repository
   
   protected
   
-  
-  
- 
 end
 #============================================================================
 
@@ -151,8 +148,23 @@ end
 if __FILE__ == $0
   puts('Repository called from main')
   puts ARGV
-  if ARGV[0] == 'create'
+  case ARGV[0]
+  when 'create'
     Repository.create()
+  when 'checkout'
+    Repository.checkout()
+  when 'commit'
+    Repository.commit()
+  when 'add'
+    Repository.add()
+  when 'delete'
+    Repository.delete()
+  when 'merge'
+    Repository.merge()
+  when 'status'
+    Repository.status()
+  else
+    puts("unknown repository command: " + ARGV[0])
   end
 else
   puts("Repository module loaded")
