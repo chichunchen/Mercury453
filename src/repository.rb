@@ -1,7 +1,7 @@
 #!/usr/bin/ruby
 
-#require "./revolog.rb"
-#require "./manifest.rb"
+require_relative "revlog"
+require_relative "manifest"
 require 'fileutils'
 
 #============================================================================
