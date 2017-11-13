@@ -58,7 +58,12 @@ module Repository
     # Main procedure: add file to list of staged files
     # Exception: if the file does not exist, fail
     puts('Repository.add not implemented')
-
+    # check if file exists
+    
+    # cp file to .stage
+    
+    # add file_name to files_staged # is this necessary?
+    
   end
 
   def Repository.delete(files_list)
@@ -68,6 +73,12 @@ module Repository
     # Main procedure: find file in list of staged files and remove it
     # Exception: if the file is not staged, fail
     puts('Repository.delete not implemented')
+    
+    # check if file in .stage
+    
+    # remove file from .stage
+    
+    # remove file from files_staged
     
   end
 
@@ -148,24 +159,27 @@ end
 if __FILE__ == $0
   puts('Repository called from main')
   puts ARGV
-  case ARGV[0]
-  when 'create'
-    Repository.create()
-  when 'checkout'
-    Repository.checkout()
-  when 'commit'
-    Repository.commit()
-  when 'add'
-    Repository.add()
-  when 'delete'
-    Repository.delete()
-  when 'merge'
-    Repository.merge()
-  when 'status'
-    Repository.status()
-  else
-    puts("unknown repository command: " + ARGV[0])
+  if ARGV[0]
+    case ARGV[0]
+    when 'create'
+      Repository.create()
+    when 'checkout'
+      Repository.checkout()
+    when 'commit'
+      Repository.commit()
+    when 'add'
+      Repository.add()
+    when 'delete'
+      Repository.delete()
+    when 'merge'
+      Repository.merge()
+    when 'status'
+      Repository.status()
+    else
+      puts("unknown repository command: " + ARGV[0])
+    end
   end
 else
   puts("Repository module loaded")
 end
+  
