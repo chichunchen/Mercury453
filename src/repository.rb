@@ -9,24 +9,28 @@ module Repository
   # This is the Repository module for top level dvcs functionality.
 
   # External methods
+  #--------------------------------------------------------------------
   def Repository.create()
     # Description: initialize current directory as a new repository
     # Precondition: current directory is not part of a repository
     # Postcondition: current directory part of a new, empty repository
     # Main procedure: determine if the current directory is already a 
     # repository;if not, create a new repository here
-    # Exception: if the current directory is part of an existing repository, fail	
+    # Exception: if the current directory is part of an existing repository, 
+    # fail	
     puts '...Repository.create'
     if File.exist?('.repository')
       puts 'repository already exists...create ignored'
     else
       Dir.mkdir('.repository')
+      Dir.mkdir('.repository/.staged')
       FileUtils.touch('.repository/files_in')
       FileUtils.touch('.repository/files_staged')
     end
     
   end
 
+  #--------------------------------------------------------------------
   def Repository.checkout(revision_str) 
     # Description: restores the repository directory to how it was at the 
     # given revision
@@ -39,6 +43,7 @@ module Repository
     puts('Repository.checkout not implemented')
   end
 
+  #--------------------------------------------------------------------
   def Repository.commit()
     # Description: commit the specified files or all outstanding changes
     # Precondition: files are staged for commit and no argument is provided, 
@@ -51,21 +56,46 @@ module Repository
     puts('Repository.commit not implemented')
   end
 
+  #--------------------------------------------------------------------
   def Repository.add(files_list)
     # Description: add the specified files to the next commit
     # Precondition: file exists in working directory
     # Postcondition: file is staged for commit
     # Main procedure: add file to list of staged files
     # Exception: if the file does not exist, fail
-    puts('Repository.add not implemented')
-    # check if file exists
+
+    if !File.exist?('.repository')
+      puts('\nNOT IN A REPOSITORY...add ignored\n')
+      return
+    end
     
-    # cp file to .stage
-    
-    # add file_name to files_staged # is this necessary?
-    
+    if files_list.nil?
+      puts('\nWARNING: add called without any files.\n')
+      return
+    end
+
+    files_list.each do |e|
+      if !File.exist?(e)
+        puts('\nWARNING: ' + e + ' is not a file\n')
+        next
+      end
+      
+      # check if file is already staged
+      if File.exist?('.repository/.stage/' + e)
+        puts('\nINFO: updating staged file: ' + e)  
+        FileUtils.rm('.repository/.stage/' + e)
+      else
+        # add file_name to files_staged # is this necessary?
+        open('.repository/files_staged', 'a') { |f|
+          f.puts("\n" + e)
+        }
+      end
+      
+      FileUtils.cp(e, '.repository/.staged/' + e)      
+    end
   end
 
+  #--------------------------------------------------------------------
   def Repository.delete(files_list)
     # Description: remove the specified files from the next commit
     # Precondition: file is staged for commit
@@ -82,6 +112,7 @@ module Repository
     
   end
 
+  #--------------------------------------------------------------------
   def Repository.merge(path_str)
     # Description: merge with the repository located at path.
     # Precondition: path contains a valid repository
@@ -96,6 +127,7 @@ module Repository
     
   end
 
+  #--------------------------------------------------------------------
   def Repository.status()
     # Description: display files changed but not committed
     # Precondition: current directory is a repository
@@ -140,6 +172,7 @@ module Repository
   end
 
 
+  #--------------------------------------------------------------------
   def Repository.history()
     # Description: display commit history
     # Precondition: current directory is a repository
