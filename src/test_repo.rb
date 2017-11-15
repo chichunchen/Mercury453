@@ -61,6 +61,11 @@ class TestRepository < Minitest::Test
     Dir.chdir('..')
   end
 
+  #----------------------------------------------------------------------
+  def test_delete
+    # TODO
+  end
+
 end
 
 

@@ -23,11 +23,11 @@ module Repository
       puts 'repository already exists...create ignored'
     else
       Dir.mkdir('.repository')
-      Dir.mkdir('.repository/.staged')
+      Dir.mkdir('.repository/.stage')
+      Dir.mkdir('.repository/.files')
       FileUtils.touch('.repository/files_in')
       FileUtils.touch('.repository/files_staged')
-    end
-    
+    end    
   end
 
   #--------------------------------------------------------------------
@@ -45,24 +45,25 @@ module Repository
 
   #--------------------------------------------------------------------
   def Repository.commit()
-    # Description: commit the specified files or all outstanding changes
-    # Precondition: files are staged for commit and no argument is provided, 
-    # or no files are staged and some are provided as arguments
-    # Postcondition: the specified files or outstanding changes are committed
+    # Description:    commit the specified files or all outstanding changes
+    # Precondition:   files are staged for commit and no argument is provided, 
+    #                 or no files are staged and some are provided as arguments
+    # Postcondition:  the specified files or outstanding changes are committed
     # Main procedure: if there are staged changes, commit them; if files are
-    # passed as arguments, stage and commit them
-    # Exception: if one or more files are staged and one or more arguments are
-    # provided, fail
+    #                 passed as arguments, stage and commit them
+    # Exception:      if one or more files are staged and one or more arguments 
+    #                 are provided, fail
     puts('Repository.commit not implemented')
   end
 
   #--------------------------------------------------------------------
   def Repository.add(files_list)
-    # Description: add the specified files to the next commit
-    # Precondition: file exists in working directory
-    # Postcondition: file is staged for commit
-    # Main procedure: add file to list of staged files
-    # Exception: if the file does not exist, fail
+    # Description:    add the specified files to the next commit
+    # Precondition:   files exist in working directory; repository was created
+    # Postcondition:  files are staged for commit
+    # Main procedure: add files to list of staged files
+    # Exception:      if a file does not exist, print a warning, files that do 
+    #                 exist will be staged
 
     if !File.exist?('.repository')
       puts('\nNOT IN A REPOSITORY...add ignored\n')
@@ -91,25 +92,30 @@ module Repository
         }
       end
       
-      FileUtils.cp(e, '.repository/.staged/' + e)      
+      FileUtils.cp(e, '.repository/.stage/' + e)      
     end
   end
 
   #--------------------------------------------------------------------
   def Repository.delete(files_list)
-    # Description: remove the specified files from the next commit
-    # Precondition: file is staged for commit
-    # Postcondition: file is not staged for commit
+    # Description:    remove the specified files from the next commit
+    # Precondition:   file is staged for commit
+    # Postcondition:  file is not staged for commit
     # Main procedure: find file in list of staged files and remove it
-    # Exception: if the file is not staged, fail
-    puts('Repository.delete not implemented')
+    # Exception:      if the file is not staged, fail
+    # ***NOTE***:     this command does not remove a file from a repository, it
+    #                 only removes the file from staging for the next commit
+
+    puts('Repository.delete not tested')
     
-    # check if file in .stage
-    
-    # remove file from .stage
-    
-    # remove file from files_staged
-    
+    files_list.each do |e|
+      if !File.exist?('.repository/.stage/' + e)
+        puts('\nWARNING: ' + e + ' is not currently staged\n')
+        next
+      else
+        FileUtils.rm('.repository/.stage/' + e)        
+      end
+    end
   end
 
   #--------------------------------------------------------------------
@@ -201,9 +207,9 @@ if __FILE__ == $0
     when 'commit'
       Repository.commit()
     when 'add'
-      Repository.add()
+      Repository.add(ARGV[1..ARGV.length])
     when 'delete'
-      Repository.delete()
+      Repository.delete(ARGV[1..ARGV.length])
     when 'merge'
       Repository.merge()
     when 'status'
