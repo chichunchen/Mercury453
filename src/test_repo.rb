@@ -26,8 +26,8 @@ class TestRepository < Minitest::Test
     Dir.chdir('.test')
     Repository.create()
     assert(File.exist?('.repository'))
-    assert(File.exist?('.repository/files_in'))
-    assert(File.exist?('.repository/files_staged'))
+    assert(File.exist?('.repository/.files'))
+    assert(File.exist?('.repository/.stage'))
     FileUtils.rm_rf('.test')
     Dir.chdir('..')
   end
@@ -64,6 +64,8 @@ class TestRepository < Minitest::Test
   #----------------------------------------------------------------------
   def test_delete
     # TODO
+    
+    
   end
 
 end

@@ -25,8 +25,6 @@ module Repository
       Dir.mkdir('.repository')
       Dir.mkdir('.repository/.stage')
       Dir.mkdir('.repository/.files')
-      FileUtils.touch('.repository/files_in')
-      FileUtils.touch('.repository/files_staged')
     end    
   end
 
@@ -85,11 +83,6 @@ module Repository
       if File.exist?('.repository/.stage/' + e)
         puts('\nINFO: updating staged file: ' + e)  
         FileUtils.rm('.repository/.stage/' + e)
-      else
-        # add file_name to files_staged # is this necessary?
-        open('.repository/files_staged', 'a') { |f|
-          f.puts("\n" + e)
-        }
       end
       
       FileUtils.cp(e, '.repository/.stage/' + e)      
@@ -143,8 +136,19 @@ module Repository
     # Main procedure: list all files staged for commit, then find and 
     #	  display all edited but unstaged files
     # Exception: if current directory is not a repository, fail 
+
     if !File.exist?('.repository')
       puts('\nNOT IN A REPOSITORY...use create\n')
+      return
+    end
+
+    if !File.exist?('.repository/.stage')
+      puts('\nREPOSITORY CORRUPT, .repository/.stage missing\n')
+      return
+    end
+
+    if !File.exist?('.repository/.files')
+      puts('\nREPOSITORY CORRUPT, .repository/.files missing\n')
       return
     end
 
@@ -152,12 +156,7 @@ module Repository
 
     # print files that are staged
     puts("...Files staged:")
-    if !File.exist?('.repository/files_staged')
-      puts('Missing repository file files_staged')
-    else
-      text = File.read('.repository/files_staged')
-      puts(text)
-    end
+    Dir[".repository/.stage/*"].each {|f| puts f}    
     
     # print files changed but not staged
     puts("...Files changed but not staged:\n")
@@ -165,12 +164,7 @@ module Repository
     
     # print files that are in repo
     puts("...Files in repo:")
-    if !File.exist?('.repository/files_in')
-      puts('Missing repository file files_in')
-    else
-      text = File.read('.repository/files_in')
-      puts(text)
-    end
+    Dir[".repository/.files/*"].each {|f| puts f}    
     
     # print files not tracked
     puts("...Files not tracked:\n")
