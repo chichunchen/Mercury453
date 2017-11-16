@@ -18,6 +18,11 @@ class Revlog
     def content(revision)
     end
 
+    def checkout(revision)
+      ## copy the revision to current working directory
+      
+    end
+    
     def commit(newrevision)
     end
 end

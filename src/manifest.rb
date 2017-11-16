@@ -17,6 +17,13 @@ class Manifest
     def checkout(revision)
     end
 
+    def files_changed()
+      ## Determine which files in cwd have changed from the current revision's
+      ## version.
+      ## Return value is an array of filename strings
+
+    end
+    
     #WARNING: interface likely to change
     def merge(revision)
     end
