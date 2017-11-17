@@ -1,28 +1,76 @@
+require 'fileutils'
+require 'scanf'
+
+# repository should create ./hg/index and ./hg/data for Revlog
 class Revlog
-    @filename = nil
-    @revlogLoc = nil
+    include FileUtils
 
-    def initialize(fname, revloc=nil)
-        if revloc == nil
-            revloc = ".hg/revlogs/" + fname + ".rl"
+    # initialize a new revlog for a given file
+    def initialize(fname, datafile)
+        @fname = fname
+        @indexfile = File.join ".hg", "index", fname
+        @datafile = File.join ".hg", "data", fname
+
+        # initialize datafile
+        cp(fname, @datafile)
+
+        # initialize indexfile
+        File.open(@indexfile, "w") do |f|
+            index_write_row f, "rev", "offset", "length"
+            index_write_row f, "0", "0", line_count_to_s(@datafile)
         end
-
-        @filename = fname
-        @revlogLoc = revloc
     end
 
     #NOTE: create() instead of new(); new() is the constructor
+    # add a revision
     def create()
     end
 
+    # return the content of a given revision
     def content(revision)
     end
 
+    # copy the revision to current working directory
     def checkout(revision)
-      ## copy the revision to current working directory
       
     end
     
+    # add file content as a new revision
     def commit(newrevision)
+        File.open(@datafile, "a") do |append|
+            File.open(@fname, "r") do |read|
+                read.each_line do |line|
+                    append.puts line
+                end
+            end
+        end
+
+        # new version is the old version plus 1
+        # new offset is the last length + last offset
+        parse_last_line = IO.readlines(@indexfile)[-1].scanf("%d %d %d")
+        new_version = parse_last_line[0] + 1
+        new_offset = parse_last_line[1] + parse_last_line[2]
+
+        File.open(@indexfile, "a") do |f|
+            index_write_row f, new_version.to_s, new_offset.to_s, line_count_to_s(@fname)
+        end
     end
+
+    private
+        def index_write_row stream, *arr
+            padding = 10
+            arr.each do |e|
+                stream.write e.ljust padding
+            end
+            stream.write "\n"
+        end
+
+        def line_count_to_s filename
+            IO.readlines(filename).size.to_s
+        end
 end
+
+## simple unit tests
+r = Revlog.new "aaa.txt", ""
+r.commit 1
+r.commit 2
