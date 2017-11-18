@@ -3,6 +3,7 @@
 require_relative "revlog"
 require_relative "manifest"
 require 'fileutils'
+require 'yaml'
 
 #============================================================================
 module Repository
