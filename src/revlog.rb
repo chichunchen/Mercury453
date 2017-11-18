@@ -10,20 +10,19 @@ class Revlog
         @fname = fname
         @indexfile = File.join ".hg", "index", fname
         @datafile = File.join ".hg", "data", fname
+    end
 
+    #NOTE: create() instead of new(); new() is the constructor
+    # add a revision
+    def create()
         # initialize datafile
-        cp(fname, @datafile)
+        cp(@fname, @datafile)
 
         # initialize indexfile
         File.open(@indexfile, "w") do |f|
             index_write_row f, "rev", "offset", "length"
             index_write_row f, "0", "0", line_count_to_s(@datafile)
         end
-    end
-
-    #NOTE: create() instead of new(); new() is the constructor
-    # add a revision
-    def create()
     end
 
     # return the content of a given revision
@@ -97,6 +96,6 @@ end
 
 ## simple unit tests
 r = Revlog.new "aaa.txt", ""
+r.create
 r.commit 1
-r.commit 2
-r.checkout 1
+r.commit 3
