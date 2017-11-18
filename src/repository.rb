@@ -2,11 +2,12 @@
 
 require_relative "revlog"
 require_relative "manifest"
+require_relative "mergemodules/repomerge"
 require 'fileutils'
-require 'yaml'
 
 #============================================================================
 module Repository
+    extend RepoMerge
   # This is the Repository module for top level dvcs functionality.
 
   # External methods
