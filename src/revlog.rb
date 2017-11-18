@@ -6,10 +6,10 @@ class Revlog
     include FileUtils
 
     # initialize a new revlog for a given file
-    def initialize(fname, datafile)
+    def initialize(fname, datafile=nil, indexfile=nil)
         @fname = fname
-        @indexfile = File.join ".hg", "index", fname
-        @datafile = File.join ".hg", "data", fname
+        @indexfile = indexfile || (File.join ".hg", "index", fname)
+        @datafile = datafile || (File.join ".hg", "data", fname)
     end
 
     #NOTE: create() instead of new(); new() is the constructor
@@ -95,7 +95,7 @@ class Revlog
 end
 
 ## simple unit tests
-r = Revlog.new "aaa.txt", ""
+r = Revlog.new "aaa.txt"
 r.create
 r.commit 1
 r.commit 3
