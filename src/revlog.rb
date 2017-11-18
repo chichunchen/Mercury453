@@ -65,11 +65,10 @@ class Revlog
         # new version is the old version plus 1
         # new offset is the last length + last offset
         parse_last_line = parse_indexfile_line get_indexfile_line(-1)
-        new_version = parse_last_line[0] + 1
         new_offset = parse_last_line[1] + parse_last_line[2]
 
         File.open(@indexfile, "a") do |f|
-            index_write_row f, new_version.to_s, new_offset.to_s, line_count_to_s(@fname)
+            index_write_row f, newrevision.to_s, new_offset.to_s, line_count_to_s(@fname)
         end
     end
 
