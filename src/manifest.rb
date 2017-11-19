@@ -6,30 +6,18 @@ MANIFEST_REL_PATH = File.join HIDDEN_DIR, "manifest", MANIFEST_NAME
 MANIFEST_INDEX_F = File.join HIDDEN_DIR, "manifest", "index", MANIFEST_NAME
 MANIFEST_DATA_F = File.join HIDDEN_DIR, "manifest", "data", MANIFEST_NAME
 
-ManifestData = Struct.new(:revision, :uuid, :contents)
-
 class Manifest
     include ManifestMerge
 
-    def initialize(revision, basedir=nil)
+    def initialize(basedir=nil)
         @basedir = basedir || Dir.pwd
         full_path = File.join @basedir, MANIFEST_REL_PATH 
         data_path = File.join @basedir, MANIFEST_DATA_F
         index_path = File.join @basedir, MANIFEST_INDEX_F
         @manlog = Revlog.new(full_path, data_path, index_path) #revlog representing this manifest file
-        @revnum = revision
-        #TODO: check whether it exists; if so, fill in any relevant fields
     end
 
-    def revision
-        @revnum
-    end
-
-    def uuid
-        #TODO
-    end
-
-    def create()
+    def create(initialrevision)
     end
 
     def commit(filelist, newrevision)
