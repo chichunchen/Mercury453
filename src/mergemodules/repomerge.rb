@@ -1,6 +1,14 @@
 require 'fileutils'
 
 class BackedHash < Hash
+    include TSort
+
+    alias tsort_each_node each_key
+
+    def tsort_each_child(node, &block)
+        fetch(node).each(&block)
+    end
+
     def initialize(f)
         @f = f
     end
@@ -71,10 +79,9 @@ module RepoMerge
     end
 end
 
-module Repo
-    extend RepoMerge
-
-end
+#module Repo
+#    extend RepoMerge
+#end
 
 #p Repo.nextrevision
 #Repo.dag[1] = [2]

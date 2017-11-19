@@ -131,6 +131,7 @@ module Repository
             #if matches something in me, skip it
             #else, get all files changed in that revision (revision = that revision #)
             #for each file, commit those contents as new revision
+            #this is true for the manifest too! (possible content changes)
     end
     
   end
