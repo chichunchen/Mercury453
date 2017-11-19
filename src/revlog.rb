@@ -9,7 +9,7 @@ class Revlog
 
     # initialize a new revlog for a given file
     def initialize(fname, datafile=nil, indexfile=nil)
-        @fname = fname
+        @fname = File.absolute_path(fname, Dir.pwd)
         @indexfile = indexfile || (File.join HIDDEN_DIR, "index", fname)
         @datafile = datafile || (File.join HIDDEN_DIR, "data", fname)
     end
