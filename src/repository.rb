@@ -126,7 +126,11 @@ module Repository
     # is determined to be identical to the current repository, fail
     puts('Repository.merge not implemented')
     #TODO: error checking
+    mydag = dag
     Dir.chdir(path_str) do
+        #dag.tsort.each do |revnum|
+        #    if 
+        #end
         #enumerate revisions in tsorted order (with uuids)
             #if matches something in me, skip it
             #else, get all files changed in that revision (revision = that revision #)

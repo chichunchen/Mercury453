@@ -1,4 +1,5 @@
 require 'fileutils'
+require 'tsort'
 
 class BackedHash < Hash
     include TSort
@@ -9,8 +10,8 @@ class BackedHash < Hash
         fetch(node).each(&block)
     end
 
-    def initialize(f)
-        @f = f
+    def initialize(path)
+        @f = File.absolute_path(path, Dir.pwd)
     end
 
     def init(h)
@@ -33,10 +34,14 @@ class BackedHash < Hash
             f.write(Marshal::dump(self))
         end
     end
+
+    def each_revision(&block)
+        tsort
+    end
 end
 
 module RepoMerge
-    DAG_LOC = ".repository/revisions.yaml"
+    DAG_LOC = ".repository/revisions.marshal"
     DEFAULT_DAG = {1 => []}
 
     def dag
@@ -79,13 +84,17 @@ module RepoMerge
     end
 end
 
-#module Repo
-#    extend RepoMerge
-#end
 
-#p Repo.nextrevision
-#Repo.dag[1] = [2]
-#p Repo.nextrevision
-#p Repo.dag
-#Repo.dag[2] = []
-#p Repo.dag
+
+=begin
+module Repo
+    extend RepoMerge
+end
+
+p Repo.nextrevision
+Repo.dag[1] = [2]
+p Repo.nextrevision
+p Repo.dag
+Repo.dag[2] = []
+p Repo.dag
+=end

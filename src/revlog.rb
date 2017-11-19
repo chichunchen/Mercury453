@@ -1,15 +1,17 @@
 require 'fileutils'
 require 'scanf'
 
-# repository should create ./hg/index and ./hg/data for Revlog
+HIDDEN_DIR = ".repository"
+
+# repository should create ./HIDDEN_DIR/index and ./HIDDEN_DIR/data for Revlog
 class Revlog
     include FileUtils
 
     # initialize a new revlog for a given file
     def initialize(fname, datafile=nil, indexfile=nil)
         @fname = fname
-        @indexfile = indexfile || (File.join ".hg", "index", fname)
-        @datafile = datafile || (File.join ".hg", "data", fname)
+        @indexfile = indexfile || (File.join HIDDEN_DIR, "index", fname)
+        @datafile = datafile || (File.join HIDDEN_DIR, "data", fname)
     end
 
     #NOTE: create() instead of new(); new() is the constructor

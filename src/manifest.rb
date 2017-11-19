@@ -1,6 +1,6 @@
 require_relative 'revlog'
 #REVLOG_LOC = ".hg/manifest/rl"
-HIDDEN_DIR = ".hg"
+HIDDEN_DIR = ".repository"
 MANIFEST_NAME = "manifest"
 MANIFEST_FULL_PATH = HIDDEN_DIR + "/manifest/" + MANIFEST_NAME
 MANIFEST_INDEX = HIDDEN_DIR + "/manifest/index/" + MANIFEST_NAME
