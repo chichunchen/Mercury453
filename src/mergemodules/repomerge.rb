@@ -20,12 +20,6 @@ class BackedHash < Hash
         @@loadproc.call(base)
     end
 
-
-    #def self.loadproc(bh, basedir=nil)
-    #    basedir = basedir || Dir.pwd
-    #    bh.f = File.absolute_path(bh.f, basedir)    
-    #end
-
     alias tsort_each_node each_key
 
     def tsort_each_child(node, &block)
@@ -58,9 +52,25 @@ class BackedHash < Hash
         end
     end
 
-    def each_revision(&block)
-        tsort
+    def each_revision(man, &block)
+        dag.tsort.map {|revnum| man.data(revnum)}.each(&block)
     end
+
+    def nextrevision
+        max = 0
+        each do |e|
+            if e[0] > max
+                max = e[0]
+            end
+            e[1].each do |e2|
+                if e2 > max
+                    max = e2
+                end
+            end
+        end
+        max + 1
+    end
+
 end
 
 module RepoMerge
@@ -95,26 +105,11 @@ module RepoMerge
             @dag = d
         end
 
-        def nextrevision
-            d = dag
-            max = 0
-            d.each do |e|
-                if e[0] > max
-                    max = e[0]
-                end
-                e[1].each do |e2|
-                    if e2 > max
-                        max = e2
-                    end
-                end
             end
-            max + 1
-        end
-    end
 end
 
 
-#=begin
+=begin
 
 module Repo
     include RepoMerge
@@ -126,4 +121,4 @@ p Repo.nextrevision
 p Repo.dag
 Repo.dag[2] = []
 p Repo.dag
-#=end
+=end

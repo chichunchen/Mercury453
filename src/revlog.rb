@@ -1,11 +1,13 @@
 require 'fileutils'
 require 'scanf'
+require_relative 'mergemodules/revlogmerge'
 
 HIDDEN_DIR = ".repository"
 
 # repository should create ./HIDDEN_DIR/index and ./HIDDEN_DIR/data for Revlog
 class Revlog
     include FileUtils
+    include RevlogMerge
 
     # initialize a new revlog for a given file
     def initialize(fname, datafile=nil, indexfile=nil)

@@ -7,7 +7,7 @@ require 'fileutils'
 
 #============================================================================
 module Repository
-  extend RepoMerge
+  include RepoMerge
   # This is the Repository module for top level dvcs functionality.
 
   # External methods
@@ -127,10 +127,18 @@ module Repository
     puts('Repository.merge not implemented')
     #TODO: error checking
     mydag = dag
+    myman = Manifest.new
+    myrevs = mydag.each_revision.to_a
     Dir.chdir(path_str) do
-        #dag.tsort.each do |revnum|
-        #    if 
-        #end
+        man = Manifest.new
+        dag.each_revision(man) do |revision|
+            if myrevs.map {|r| r.uuid}.include?(revision.uuid)
+                next
+            else
+                #this is a new revision
+                #change the data and commit it
+            end
+        end
         #enumerate revisions in tsorted order (with uuids)
             #if matches something in me, skip it
             #else, get all files changed in that revision (revision = that revision #)
