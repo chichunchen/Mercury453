@@ -41,54 +41,61 @@ class BackedHash < Hash
 end
 
 module RepoMerge
-    DAG_LOC = ".repository/revisions.marshal"
-    DEFAULT_DAG = {1 => []}
 
-    def dag
-        return @dag if @dag
-        begin
-            File.open(DAG_LOC, "r") do |f|
-                @dag = Marshal::load(f)
+    def self.included(base)
+        base.extend(RepoClassMethods)
+    end
+
+    module RepoClassMethods
+
+        DAG_LOC = ".repository/revisions.marshal"
+        DEFAULT_DAG = {1 => []}
+        def dag
+            return @dag if @dag
+            begin
+                File.open(DAG_LOC, "r") do |f|
+                    @dag = Marshal::load(f)
+                end
+            rescue Errno::ENOENT
+                d = File.dirname(DAG_LOC)
+                unless File.directory?(d)
+                    FileUtils.mkdir_p(d)
+                end
+                @dag = BackedHash.new(DAG_LOC)
+                @dag.init(DEFAULT_DAG)
+                @dag
             end
-        rescue Errno::ENOENT
-            d = File.dirname(DAG_LOC)
-            unless File.directory?(d)
-                FileUtils.mkdir_p(d)
-            end
-            @dag = BackedHash.new(DAG_LOC)
-            @dag.init(DEFAULT_DAG)
-            @dag
         end
-    end
 
-    def dag=(val)
-        d = dag
-        d.init(val)
-        @dag = d
-    end
+        def dag=(val)
+            d = dag
+            d.init(val)
+            @dag = d
+        end
 
-    def nextrevision
-        d = dag
-        max = 0
-        d.each do |e|
-            if e[0] > max
-                max = e[0]
-            end
-            e[1].each do |e2|
-                if e2 > max
-                    max = e2
+        def nextrevision
+            d = dag
+            max = 0
+            d.each do |e|
+                if e[0] > max
+                    max = e[0]
+                end
+                e[1].each do |e2|
+                    if e2 > max
+                        max = e2
+                    end
                 end
             end
+            max + 1
         end
-        max + 1
     end
 end
 
 
-
 =begin
+
 module Repo
-    extend RepoMerge
+    include RepoMerge
 end
 
 p Repo.nextrevision
