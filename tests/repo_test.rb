@@ -1,20 +1,11 @@
-#!/usr/bin/ruby -w
-
-# 
-
-require_relative "repository"
-require "minitest/autorun"
+require 'repository'
+require 'minitest/autorun'
 
 #=============================================================================
 class TestRepository < Minitest::Test 
 
   def setup
     
-  end
-  # check to see if framework is working
-  def test_simple
-    assert_equal(4, 2+2)
-    assert_equal(6, 2*3) 
   end
 
   #----------------------------------------------------------------------
