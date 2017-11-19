@@ -3,6 +3,13 @@
 require_relative "revlog"
 require_relative "manifest"
 require 'fileutils'
+require 'logger'
+
+logger = Logger.new(STDOUT)
+#logger.level = Logger::ERROR
+#logger.level = Logger::WARN
+#logger.level = Logger::INFO
+logger.level = Logger::DEBUG
 
 #============================================================================
 module Repository
@@ -24,7 +31,6 @@ module Repository
     else
       Dir.mkdir('.repository')
       Dir.mkdir('.repository/.stage')
-      Dir.mkdir('.repository/.files')
     end    
   end
 
@@ -147,28 +153,30 @@ module Repository
       return
     end
 
-    if !File.exist?('.repository/.files')
-      puts('\nREPOSITORY CORRUPT, .repository/.files missing\n')
-      return
-    end
-
     print("\nREPOSITORY STATUS:\n")
 
     # print files that are staged
     puts("...Files staged:")
-    Dir[".repository/.stage/*"].each {|f| puts f}    
+    Dir[".repository/.stage/*"].each {|f| puts File.basename(f)}    
     
+    # print staged files that have changed
+    puts("...Files changed from .staged version:\n")
+    Dir[".repository/.stage/*"].each do |f|
+      f_orig = File.basename(f)
+      if !File.exist?(f_orig) or !FileUtils.identical?(f,f_orig)
+        puts f_orig
+      end
+    end
+
     # print files changed but not staged
-    puts("...Files changed but not staged:\n")
+    puts("...Files changed from current revision:\n")
     # TODO
-    
-    # print files that are in repo
-    puts("...Files in repo:")
-    Dir[".repository/.files/*"].each {|f| puts f}    
+
     
     # print files not tracked
-    puts("...Files not tracked:\n")
+    #puts("...Files not tracked:\n")
     # TODO
+    
   end
 
 
