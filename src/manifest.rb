@@ -18,10 +18,11 @@ class Manifest
     end
 
     def files_changed()
+      r = []
       ## Determine which files in cwd have changed from the current revision's
       ## version.
       ## Return value is an array of filename strings
-
+      return r 
     end
     
     #WARNING: interface likely to change

@@ -170,7 +170,8 @@ module Repository
 
     # print files changed but not staged
     puts("...Files changed from current revision:\n")
-    # TODO
+    mani = Manifest.new('.')
+    mani.files_changed().each {|f| puts f}
 
     
     # print files not tracked
