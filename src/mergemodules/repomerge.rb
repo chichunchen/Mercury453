@@ -54,6 +54,21 @@ module RepoMerge
         @dag = d
     end
 
+    def nextrevision
+        d = dag
+        max = 0
+        d.each do |e|
+            if e[0] > max
+                max = e[0]
+            end
+            e[1].each do |e2|
+                if e2 > max
+                    max = e2
+                end
+            end
+        end
+        max + 1
+    end
 end
 
 module Repo
@@ -61,6 +76,9 @@ module Repo
 
 end
 
+#p Repo.nextrevision
+#Repo.dag[1] = [2]
+#p Repo.nextrevision
 #p Repo.dag
 #Repo.dag[2] = []
 #p Repo.dag

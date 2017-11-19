@@ -7,7 +7,7 @@ require 'fileutils'
 
 #============================================================================
 module Repository
-    extend RepoMerge
+  extend RepoMerge
   # This is the Repository module for top level dvcs functionality.
 
   # External methods
@@ -124,7 +124,14 @@ module Repository
     # merged (see Analysis document)
     # Exception: if path does not contain a repository, or if the repository 
     # is determined to be identical to the current repository, fail
-    puts('Repository.mrege not implemented')
+    puts('Repository.merge not implemented')
+    #TODO: error checking
+    Dir.chdir(path_str) do
+        #enumerate revisions in tsorted order (with uuids)
+            #if matches something in me, skip it
+            #else, get all files changed in that revision (revision = that revision #)
+            #for each file, commit those contents as new revision
+    end
     
   end
 
