@@ -1,4 +1,5 @@
 require 'minitest/autorun'
+require 'minitest/benchmark'
 require 'minitest/hooks/default'
 require 'fileutils'
 require 'revlog.rb'
@@ -78,4 +79,52 @@ class RevlogTest < Minitest::Test
                 f.puts "Hello, World"
             end
         end
+end
+
+class BenchRevlog < Minitest::Benchmark
+    include Minitest::Hooks
+    include FileUtils
+
+    @@default_path = '.repository/'
+    @@test_file = 'dumb.txt'
+    @@upper = 50
+
+    def after_all
+        # clean file system after each tests
+        delete_arr = ['index', 'data']
+        delete_arr.each do |dir|
+            rm(Dir.glob(File.join(@@default_path, dir, '*')))
+        end
+
+        # restore dump.txt
+        open(@@test_file, 'w') do |f|
+            f.puts "123"
+        end
+    end
+
+    def bench_content
+        r = Revlog.new @@test_file
+        r.create
+        (0..@@upper).each { |e| r.commit e }
+        assert_performance_linear 0.0001 do |n|
+            r.content n if n < @@upper
+        end
+    end
+
+    def bench_commit
+        r = Revlog.new @@test_file
+        r.create
+        assert_performance_linear 0.001 do |n|
+            r.commit n
+        end
+    end
+
+    def bench_checkout
+        r = Revlog.new @@test_file
+        r.create
+        (0..@@upper).each { |e| r.commit e }
+        assert_performance_linear 0.001 do |n|
+            r.checkout n if n < @@upper
+        end
+    end
 end

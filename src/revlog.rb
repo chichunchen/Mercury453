@@ -32,7 +32,7 @@ class Revlog
     # return the content of a given revision
     def content(revision)
         line = revision+1
-        parse = parse_indexfile_line get_indexfile_line(line)
+        parse = parse_indexfile_line get_indexfile_with_line(line)
         offset = parse[1]
         length = parse[2]
         str = ""
@@ -67,11 +67,12 @@ class Revlog
 
         # new version is the old version plus 1
         # new offset is the last length + last offset
-        parse_last_line = parse_indexfile_line get_indexfile_line(-1)
+        parse_last_line = parse_indexfile_line get_indexfile_with_line(-1)
         new_offset = parse_last_line[1] + parse_last_line[2]
 
         File.open(@indexfile, "a") do |f|
-            index_write_row f, newrevision.to_s, new_offset.to_s, line_count_to_s(@fname)
+            index_write_row(f, newrevision.to_s,
+                            new_offset.to_s, line_count_to_s(@fname))
         end
     end
 
@@ -79,7 +80,7 @@ class Revlog
         def index_write_row stream, *arr
             padding = 10
             arr.each do |e|
-                stream.write e.ljust padding
+                stream.write(e.ljust(padding))
             end
             stream.write "\n"
         end
@@ -89,7 +90,7 @@ class Revlog
         end
 
         # return a line with given line number
-        def get_indexfile_line number
+        def get_indexfile_with_line number
             IO.readlines(@indexfile)[number]
         end
 
