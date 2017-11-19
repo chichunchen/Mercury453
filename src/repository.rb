@@ -4,6 +4,7 @@ require_relative "revlog"
 require_relative "manifest"
 require 'fileutils'
 require 'logger'
+require 'securerandom'
 
 logger = Logger.new(STDOUT)
 #logger.level = Logger::ERROR
@@ -57,7 +58,14 @@ module Repository
     #                 passed as arguments, stage and commit them
     # Exception:      if one or more files are staged and one or more arguments 
     #                 are provided, fail
-    puts('Repository.commit not implemented')
+    
+    new_revision = SecureRandom.hex
+    puts new_revision
+    files = Dir[".repository/.stage/*"]
+    #logger.debug(files)
+    manifest = Manifest.new('.')
+    manifest.commit(files, new_revision)
+    FileUtils.rm_rf('.repository/.stage/.') 
   end
 
   #--------------------------------------------------------------------
@@ -172,7 +180,7 @@ module Repository
     puts("...Files changed from current revision:\n")
     mani = Manifest.new('.')
     mani.files_changed().each {|f| puts f}
-
+    mani = nil
     
     # print files not tracked
     #puts("...Files not tracked:\n")
