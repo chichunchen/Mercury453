@@ -95,9 +95,3 @@ class Revlog
             line.scanf("%d %d %d")
         end
 end
-
-## simple unit tests
-r = Revlog.new "aaa.txt"
-r.create
-r.commit 1
-r.commit 3
