@@ -4,6 +4,28 @@ require 'tsort'
 class BackedHash < Hash
     include TSort
 
+    attr_accessor :f
+
+    @@loadproc = Proc.new { |base|
+        base = base || Dir.pwd
+        Proc.new { |bh|
+            if bh.class == BackedHash
+                bh.f = File.absolute_path(bh.f, base)
+            end
+            bh
+        }
+    }
+
+    def self.loadproc (base=nil)
+        @@loadproc.call(base)
+    end
+
+
+    #def self.loadproc(bh, basedir=nil)
+    #    basedir = basedir || Dir.pwd
+    #    bh.f = File.absolute_path(bh.f, basedir)    
+    #end
+
     alias tsort_each_node each_key
 
     def tsort_each_child(node, &block)
@@ -11,7 +33,8 @@ class BackedHash < Hash
     end
 
     def initialize(path)
-        @f = File.absolute_path(path, Dir.pwd)
+        #@f = File.absolute_path(path, Dir.pwd)
+        @f = path
     end
 
     def init(h)
@@ -47,14 +70,13 @@ module RepoMerge
     end
 
     module RepoClassMethods
-
         DAG_LOC = ".repository/revisions.marshal"
         DEFAULT_DAG = {1 => []}
         def dag
             return @dag if @dag
             begin
                 File.open(DAG_LOC, "r") do |f|
-                    @dag = Marshal::load(f)
+                    @dag = Marshal::load(f, BackedHash.loadproc(nil))
                 end
             rescue Errno::ENOENT
                 d = File.dirname(DAG_LOC)
@@ -92,7 +114,7 @@ module RepoMerge
 end
 
 
-=begin
+#=begin
 
 module Repo
     include RepoMerge
@@ -104,4 +126,4 @@ p Repo.nextrevision
 p Repo.dag
 Repo.dag[2] = []
 p Repo.dag
-=end
+#=end
