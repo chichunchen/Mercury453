@@ -1,5 +1,6 @@
 require 'fileutils'
 require 'scanf'
+require 'zlib'
 require_relative 'mergemodules/revlogmerge'
 
 HIDDEN_DIR = ".repository"
@@ -8,6 +9,7 @@ HIDDEN_DIR = ".repository"
 class Revlog
     include FileUtils
     include RevlogMerge
+    include Zlib
 
     # initialize a new revlog for a given file
     def initialize(fname, datafile=nil, indexfile=nil)
@@ -19,8 +21,11 @@ class Revlog
     #NOTE: create() instead of new(); new() is the constructor
     # add a revision
     def create()
-        # initialize datafile
-        cp(@fname, @datafile)
+        # initialize datafile with compressed file @fname
+        compress_file_lines = Deflate.deflate(File.read(@fname))
+        File.open(@datafile, "w") do |f|
+            f.puts compress_file_lines
+        end
 
         # initialize indexfile
         File.open(@indexfile, "w") do |f|
@@ -42,7 +47,8 @@ class Revlog
             str += IO.readlines(@datafile)[l]
         end
 
-        str
+        # decompress back to text
+        str = Inflate.inflate(str)
     end
 
     # copy the revision to current working directory
@@ -57,13 +63,14 @@ class Revlog
     
     # add file content as a new revision
     def commit(newrevision)
+        # append current file fname to datafile
+        compress_file_lines = Deflate.deflate(File.read(@fname))
+        length = IO.readlines(@datafile).size
+
         File.open(@datafile, "a") do |append|
-            File.open(@fname, "r") do |read|
-                read.each_line do |line|
-                    append.puts line
-                end
-            end
+            append.puts compress_file_lines
         end
+        length = IO.readlines(@datafile).size - length
 
         # new version is the old version plus 1
         # new offset is the last length + last offset
@@ -72,7 +79,7 @@ class Revlog
 
         File.open(@indexfile, "a") do |f|
             index_write_row(f, newrevision.to_s,
-                            new_offset.to_s, line_count_to_s(@fname))
+                            new_offset.to_s, length.to_s)
         end
     end
 
