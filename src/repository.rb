@@ -38,8 +38,26 @@ module Repository
 
   include RepoMerge # 
 
+
+ 
+  #--------------------------------------------------------------------
+  # TODO: should make this private
+  
+  def Repository.set_cur_rev(new_rev_int)
+    File.open('.repository/.current_revision.txt', 'w') do |f| 
+      f.write(new_rev_int.to_s) 
+    end
+  end
+  
+
   # External methods
   #--------------------------------------------------------------------
+  def Repository.cur_rev()
+    # Returns current revision
+    text = File.read('.repository/.current_revision.txt')
+    return text.to_i()
+  end
+ 
   def Repository.create()
     # Description:    initialize current directory as a new repository
     # Precondition:   current directory is not part of a repository
@@ -88,17 +106,20 @@ module Repository
     
     # Check if there are staged files, if so, don't allow checkout.
     files = Dir[".repository/.stage/*"]
-    if files.size == 0
+    if files.size != 0
       $logger.warn('WARNING: checkout not allowed when files are staged.')
       $logger.warn('WARNING: either commit or delete staged files first.')
       return
     end
     
     # check if revision_str is valid?
+    revision_int = revision_str.to_i()
     
     #manifest = Manifest.new()
     #manifest.checkout()
-    
+
+    # if checkout successful, update .current_revision.txt
+    Repository.set_cur_rev(revision_int)   
   end
 
   #--------------------------------------------------------------------
@@ -133,11 +154,11 @@ module Repository
     #manifest = Manifest.new('.')
     #manifest.commit(files, new_rev_int)
 
-    open('.repository/commit_history.txt', 'a') { |f|
+    open('.repository/.commit_history.txt', 'a') { |f|
        f.puts("\n" + new_rev_int.to_s)
     }
     
-    
+    Repository.set_cur_rev(new_rev_int)    
     
 
     #Dag.add_rev()
@@ -277,6 +298,8 @@ module Repository
 
     print("\nREPOSITORY STATUS:\n")
 
+    puts("Repository No: " + Repository.cur_rev.to_s + "\n")
+
     # print files that are staged
     puts("...Files staged:")
     Dir[".repository/.stage/*"].each {|f| puts File.basename(f)}    
@@ -318,18 +341,6 @@ module Repository
     #text = File.read('.repository/commit_history.txt')
     #puts(text)
   end
-
-  #--------------------------------------------------------------------
-  def Repository.cur_rev()
-    # Returns current revision
-    text = File.read('.repository/.current_revision.txt')
-    return text.to_i()
-  end
-  
-  #--------------------------------------------------------------------
-  
-  protected
-  
 end
 #============================================================================
 
