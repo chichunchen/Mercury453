@@ -269,7 +269,7 @@ module Repository
     # print files changed but not staged
     puts("...Files changed from current revision:\n")
     mani = Manifest.new('.')
-    files_changed = mani.files_changed()
+    files_changed = mani.files_changed(Repository.cur_rev())
     if !files_changed.nil? 
       files_changed.each {|f| puts f}
     end

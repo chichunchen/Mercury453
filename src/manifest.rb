@@ -56,7 +56,7 @@ class Manifest
 
     end
 
-    def commit(filelist, newrevision)
+    def commit(filelist, newrevision, path='.repository/.stage')
 
         #create a filelist and write the new revision number inside the filelist
         flist = File.new(filelist,'w')
@@ -158,11 +158,22 @@ class Manifest
         end
 
     end
+ 
+    
+    def files_changed(revision_int)
+      ## Determine which files in cwd have changed from revision
+      ## version.
+      ## Return value is an array of filename strings
+      return []
+    end
+    
+    
+    
 
 end
 
-a = Manifest.new
-a.create()
-a.commit('filelist1',"8888")
-a.checkout("3333")
+#a = Manifest.new
+#a.create()
+#a.commit('filelist1',"8888")
+#a.checkout("3333")
 
