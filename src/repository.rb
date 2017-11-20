@@ -78,7 +78,8 @@ module Repository
     # Exception:      if one or more files are staged and one or more arguments 
     #                 are provided, fail
 
-    files = Dir[".repository/.stage/*"]
+    #files = Dir[".repository/.stage/*"]
+    files = Dir.entries(".repository/.stage/").reject {|e| e == '.' || e == '..'}.to_a
     if files.size == 0
       $logger.warn('WARNING: no files staged to commit, commit ignored')
       return
@@ -89,13 +90,13 @@ module Repository
     # note, new_rev_hash will likely be moved to manifest
     #new_rev_hash = SecureRandom.hex
 
-    $logger.info('cur_rev_int: ' + new_rev_int.to_s)
-    #$logger.info('new_rev_hash: ' + new_rev_hash)
+    $logger.info('cur_rev_int: ' + cur_rev_int.to_s)
+    $logger.info('new_rev_int: ' + new_rev_int.to_s)
     #$logger.info('new_rev_hash: ' + new_rev_hash)
     
-    #logger.debug(files)
+    #$logger.debug(files)
     manifest = Manifest.new('.')
-    manifest.commit('.repository/.stage/',files, new_rev_int)
+    manifest.commit('.repository/.stage/', files, new_rev_int)
     #open('.repository/commit_history.txt', 'a') { |f|
     #   f.puts("\n" + new_rev_int.to_s)
     #}
@@ -103,8 +104,9 @@ module Repository
     
     
 
+    dag.add_revision(new_rev_int, cur_rev_int)
     #Dag.add_rev()
-    FileUtils.rm_rf('.repository/.stage/*') 
+    FileUtils.rm_rf('.repository/.stage/.') 
   end
 
   #--------------------------------------------------------------------
@@ -200,19 +202,11 @@ module Repository
                     newrev.add_content(revmap[c.revnum],c.fname)
                 end
                 #newrev should be ready to be merge_committed
-                #all content revnums should be defined
-                #who's the parent? : _dag.parents(revnum)
-                #somedag.add_revision_under(newrevisiondata, parents, manifest)
-                    #manifest.add_revision(newrevisiondata), + bookkeeping
-                    #or, somemanifest.add_revision_under(newrevisiondata, parents) NOT IDEAL, PARENTS UN-NEEDED
-                mydag.merge_revision_under(newrev, dag.parents(revision.revnum).map {|r| revmap[r]}, myman)
+                p "MERGING UNDER WITH REVISION"
+                p newrev.revnum
+                mydag.merge_revision_under(newrev, dag.parents(revision.revnum).map {|r| revmap[r]})
             end
         end
-        #enumerate revisions in tsorted order (with uuids)
-            #if matches something in me, skip it
-            #else, get all files changed in that revision (revision = that revision #)
-            #for each file, commit those contents as new revision
-            #this is true for the manifest too! (possible content changes)
     end
     
   end

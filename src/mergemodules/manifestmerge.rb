@@ -78,11 +78,14 @@ module ManifestMerge
         end
         filelist.each do |fname|
             rl = Revlog.new(fname)
-            if not rl.created?
-                rl.create
-            end
             File.open(File.join(basedir, fname), 'r') do |f|
-                rl.commit(newrevision,f)
+                if not rl.created?
+                    p 'CREATING'
+                    p newrevision
+                    rl.create(newrevision, f)
+                else
+                    rl.commit(newrevision,f)
+                end
             end
         end
         newdata = ManifestData.new

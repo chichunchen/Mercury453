@@ -14,15 +14,28 @@ class Revlog
     # initialize a new revlog for a given file
     def initialize(fname, datafile=nil, indexfile=nil)
         @fname = File.absolute_path(fname, Dir.pwd)
-        @indexfile = indexfile || (File.join HIDDEN_DIR, "index", fname)
-        @datafile = datafile || (File.join HIDDEN_DIR, "data", fname)
+        indexdir = File.join HIDDEN_DIR, "index"
+        datadir = File.join HIDDEN_DIR, "data"
+        @indexfile = indexfile || (File.join indexdir, fname)
+        @datafile = datafile || (File.join datadir, fname)
+        [indexdir, datadir].each do |d|
+            unless File.directory?(d)
+                FileUtils.mkdir_p(d)
+            end
+        end
     end
 
     #NOTE: create() instead of new(); new() is the constructor
     # add a revision
-    def create(revision=0)
+    def create(revision=0, content_io=nil)
+        p "CREATING WITH REVISION"
+        p revision
         # initialize datafile with compressed file @fname
-        compress_file_lines = Deflate.deflate(File.read(@fname))
+        if content_io.nil?
+            compress_file_lines = Deflate.deflate(File.read(@fname))
+        else
+            compress_file_lines = Deflate.deflate(content_io.read)
+        end
         File.open(@datafile, "w") do |f|
             f.puts compress_file_lines
         end
@@ -36,8 +49,10 @@ class Revlog
 
     # return the content of a given revision
     def content(revision)
-        line = revision+1
-        parse = parse_indexfile_line get_indexfile_with_line(line)
+        #line = revision+1
+        #parse = parse_indexfile_line get_indexfile_with_line(line)
+        p revision_line_map
+        parse = parse_indexfile_line revision_line_map[revision]
         offset = parse[1]
         length = parse[2]
         str = ""
@@ -63,6 +78,8 @@ class Revlog
     
     # add file content as a new revision
     def commit(newrevision, content_io=nil)
+        p "COMMITTING WITH REVISION"
+        p newrevision
         if content_io.nil?
             compress_file_lines = Deflate.deflate(File.read(@fname))
         else
@@ -99,6 +116,15 @@ class Revlog
 
         def line_count_to_s filename
             IO.readlines(filename).size.to_s
+        end
+
+        def revision_line_map
+            m = {}
+            IO.readlines(@indexfile).each do |l|
+                parse = parse_indexfile_line l
+                m[parse[0]] = l
+            end
+            m
         end
 
         # return a line with given line number
