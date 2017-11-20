@@ -20,7 +20,7 @@ class Revlog
 
     #NOTE: create() instead of new(); new() is the constructor
     # add a revision
-    def create()
+    def create(revision=0)
         # initialize datafile with compressed file @fname
         compress_file_lines = Deflate.deflate(File.read(@fname))
         File.open(@datafile, "w") do |f|
@@ -30,7 +30,7 @@ class Revlog
         # initialize indexfile
         File.open(@indexfile, "w") do |f|
             index_write_row f, "rev", "offset", "length"
-            index_write_row f, "0", "0", line_count_to_s(@datafile)
+            index_write_row f, revision.to_s, "0", line_count_to_s(@datafile)
         end
     end
 
@@ -62,9 +62,14 @@ class Revlog
     end
     
     # add file content as a new revision
-    def commit(newrevision)
+    def commit(newrevision, content_io=nil)
+        if content_io.nil?
+            compress_file_lines = Deflate.deflate(File.read(@fname))
+        else
+            compress_file_lines = Deflate.deflate(content_io.read)
+        end
+
         # append current file fname to datafile
-        compress_file_lines = Deflate.deflate(File.read(@fname))
         length = IO.readlines(@datafile).size
 
         File.open(@datafile, "a") do |append|

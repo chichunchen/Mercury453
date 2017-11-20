@@ -43,6 +43,19 @@ class RevlogTest < Minitest::Test
         end
     end
 
+    def test_commit_with_contentio
+        r = Revlog.new @@test_file
+        r.create
+        File.open('dumb.txt') do |f|
+            r.commit 1, f
+        end
+        File.open(@@test_file) do |f|
+            r.commit 2, f
+        end
+        raw = IO.readlines('dumb.txt').join
+        assert_equal(raw, r.content(1))
+    end
+
     def test_checkout_with_commit
         r = Revlog.new @@test_file
         r.create
