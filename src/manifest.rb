@@ -1,3 +1,14 @@
+require_relative 'revlog'
+require_relative 'mergemodules/manifestmerge'
+require 'fileutils'
+FIRST_REV ||= 0
+FIRST_REV_UUID ||= -1
+HIDDEN_DIR ||= ".repository"
+MANIFEST_NAME = "manifest.rl"
+MANIFEST_REL_PATH = File.join HIDDEN_DIR, "manifest", MANIFEST_NAME
+MANIFEST_INDEX_F = File.join HIDDEN_DIR, "manifest", "index", MANIFEST_NAME
+MANIFEST_DATA_F = File.join HIDDEN_DIR, "manifest", "data", MANIFEST_NAME
+
 #This is my designed simple manifest
 #In my opinion, I suppose manifest is a file, and the content of each line is the revision number and the corresponding filename
 #This is .rb file is only for test functions because I don't use the Revlog module
@@ -13,17 +24,35 @@
 
 
 class Manifest
+    include ManifestMerge
 
-
-    #def initialize(rootPath)
-
-    #    @manlog = Revlog.new(rootPath+REVLOG_LOC)
-
-    #end
+    def initialize(basedir=nil)
+        @basedir = basedir || Dir.pwd
+        @full_fpath = File.join @basedir, MANIFEST_REL_PATH 
+        data_path = File.join @basedir, MANIFEST_DATA_F
+        index_path = File.join @basedir, MANIFEST_INDEX_F
+        if File.directory?(File.join @basedir, HIDDEN_DIR)
+            [@full_fpath, data_path, index_path].each do |p|
+                d = File.dirname(p)
+                unless File.directory?(d)
+                    FileUtils.mkdir_p(d)
+                end
+            end
+        end
+        @manlog = Revlog.new(@full_fpath, data_path, index_path) #revlog representing this manifest file
+    end
 
     def create()
+        newdata = ManifestData.new
+        newdata.revnum = FIRST_REV
+        newdata.uuid = FIRST_REV_UUID
+        File.open(@full_fpath, "w") do |f|
+            f.write(newdata.to_s)
+        end
+        @manlog.create(FIRST_REV)
 
-        @manifest = File.new('manifest','a')
+        #PRIOR VERSION:
+        #@manifest = File.new('manifest','a')
 
     end
 
