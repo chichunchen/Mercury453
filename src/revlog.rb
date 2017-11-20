@@ -48,11 +48,7 @@ class Revlog
 
     # return the content of a given revision
     def content(revision)
-        #line = revision+1
-        #parse = parse_indexfile_line get_indexfile_with_line(line)
-        p "CONTENT #{revision} for #{@indexfile}, map is"
-        p revision_line_map
-        parse = parse_indexfile_line revision_line_map[revision]
+        parse = parse_indexfile_line get_indexfile_with_revision(revision)
         offset = parse[1]
         length = parse[2]
         str = ""
@@ -104,8 +100,6 @@ class Revlog
             index_write_row(f, newrevision.to_s,
                             new_offset.to_s, length.to_s)
         end
-        p "AFTER COMMIT, map is"
-        p revision_line_map
         p "AFTER COMMIT, content is"
         File.open(@datafile, "r") do |f| p f.read end
     end
@@ -123,16 +117,22 @@ class Revlog
             IO.readlines(filename).size.to_s
         end
 
-        def revision_line_map
-            m = {}
-            IO.readlines(@indexfile).each do |l|
-                parse = parse_indexfile_line l
-                m[parse[0]] = l if parse[0]
+        # return a row with given revision number
+        def get_indexfile_with_revision revision
+            result = nil
+            File.open(@indexfile, "r") do |f|
+                f.each_line do |line|
+                    row = parse_indexfile_line(line)
+                    if row[0] == revision
+                        result = line
+                        break
+                    end
+                end
             end
-            m
+            return result if result
         end
 
-        # return a line with given line number
+        # return a row with given line number
         def get_indexfile_with_line number
             IO.readlines(@indexfile)[number]
         end

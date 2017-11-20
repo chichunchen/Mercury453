@@ -82,6 +82,19 @@ class RevlogTest < Minitest::Test
         assert_equal(rev_n, get_lines_from_testfile)
     end
 
+    def test_non_sequential_1
+        r = Revlog.new @@test_file
+        r.create 3
+        File.open('dumb.txt') do |f|
+            r.commit 5, f
+        end
+        File.open(@@test_file) do |f|
+            r.commit 7, f
+        end
+        raw = IO.readlines('dumb.txt').join
+        assert_equal(raw, r.content(5))
+    end
+
     private
         def get_lines_from_testfile
             IO.readlines(@@test_file).join
