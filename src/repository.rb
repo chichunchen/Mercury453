@@ -95,7 +95,7 @@ module Repository
     
     #logger.debug(files)
     manifest = Manifest.new('.')
-    manifest.commit(files, new_rev_int)
+    manifest.commit('.repository/.stage/',files, new_rev_int)
     #open('.repository/commit_history.txt', 'a') { |f|
     #   f.puts("\n" + new_rev_int.to_s)
     #}

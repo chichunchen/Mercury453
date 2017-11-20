@@ -56,7 +56,7 @@ class Manifest
 
     end
 
-    def commit(filelist, newrevision)
+    #def commit(filelist, newrevision)
 =begin
         #create a filelist and write the new revision number inside the filelist
         flist = File.new(filelist,'w')
@@ -111,7 +111,7 @@ class Manifest
 
 
 =end
-    end
+    #end
 
     def checkout(revision)
 =begin

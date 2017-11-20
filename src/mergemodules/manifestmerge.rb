@@ -58,7 +58,8 @@ module ManifestMerge
 
     def add_revision(newdata)
         s = newdata.to_s
-        @manlog.add_revision_contents(newdata.revnum, s)
+        #@manlog.add_revision_contents(newdata.revnum, s)
+        @manlog.commit(newdata.revnum, StringIO.new(s))
     end
 
     def self.newuuid
@@ -68,6 +69,32 @@ module ManifestMerge
     def newuuid
         #SecureRandom.hex
         ManifestMerge::newuuid
+    end
+
+    def commit(basedir, filelist, newrevision)
+        curdata = nil
+        File.open(@full_fpath, 'r') do |f|
+            curdata = ManifestData.new(f)
+        end
+        filelist.each do |fname|
+            rl = Revlog.new(fname)
+            if not rl.created?
+                rl.create
+            end
+            File.open(File.join(basedir, fname), 'r') do |f|
+                rl.commit(newrevision,f)
+            end
+        end
+        newdata = ManifestData.new
+        newdata.revnum = newrevision
+        curdata.contents.each do |c|
+            if filelist.include?(c.fname)
+                c.revnum = newrevision
+            end
+            newdata.add_content(c.revnum, c.fname)
+        end
+        @manlog.commit(newrevision, StringIO.new(newdata.to_s))
+        @manlog.checkout(newrevision)
     end
 
     module ManifestClassMethods
