@@ -190,13 +190,13 @@ module Repository
     # is determined to be identical to the current repository, fail
     puts('Repository.merge not implemented')
     #TODO: error checking
-    myDag = Dag
+    mydag = dag
     myman = Manifest.new
     myrevs = mydag.each_revision.to_a
     revmap = {}
     Dir.chdir(path_str) do
         man = Manifest.new
-        Dag.each_revision(man) do |revision|
+        dag.each_revision(man) do |revision|
             if myrevs.map {|r| r.uuid}.include?(revision.uuid)
                 revmap[revision.revnum] = revision.revnum
                 next
