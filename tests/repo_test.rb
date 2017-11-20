@@ -202,6 +202,33 @@ class TestRepository < Minitest::Test
     FileUtils.rm_rf('.test')
   end
 
+  def test_merge_history
+    if File.exist?('.test')
+      FileUtils.rm_rf('.test')
+    end
+    Dir.mkdir('.test')
+    Dir.chdir('.test')
+    Dir.mkdir('repo1')
+    Dir.chdir('repo1')
+    Repository.create()
+    File.open('f.txt','w') do |f|
+        f.write(" ")
+    end
+    Repository.commit()
+    Dir.chdir('..')
+    Dir.mkdir('repo2')
+    Dir.chdir('repo2')
+    Repository.create()
+    File.open('f.txt','w') do |f|
+        f.write("a")
+    end
+    Repository.merge('../repo1')
+    #Repository.help()
+    Dir.chdir('..')
+    FileUtils.rm_rf('.test')
+ 
+  end
+
 end
 
 

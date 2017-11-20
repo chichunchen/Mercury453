@@ -192,7 +192,7 @@ module Repository
     #TODO: error checking
     mydag = dag
     myman = Manifest.new
-    myrevs = mydag.each_revision.to_a
+    myrevs = mydag.each_revision(myman).to_a
     revmap = {}
     Dir.chdir(path_str) do
         man = Manifest.new

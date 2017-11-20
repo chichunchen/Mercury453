@@ -57,7 +57,7 @@ class Manifest
     end
 
     def commit(filelist, newrevision)
-
+=begin
         #create a filelist and write the new revision number inside the filelist
         flist = File.new(filelist,'w')
         flist.puts newrevision
@@ -110,11 +110,11 @@ class Manifest
         end
 
 
-
+=end
     end
 
     def checkout(revision)
-
+=begin
         manilist = @manifest
 
         arr = IO.readlines('manifest')
@@ -156,7 +156,7 @@ class Manifest
             puts pairsname[k]
             #I plan to change the puts sentence into a File.open function in the future
         end
-
+=end
     end
 
 end
