@@ -20,7 +20,8 @@ class Manifest
     def create(initialrevision)
     end
 
-    def commit(filelist, newrevision)
+    #def commit(filelist, newrevision)
+    def commit(path, filelist, newrevision)
     end
 
     def checkout(revision)
