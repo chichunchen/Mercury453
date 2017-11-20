@@ -15,7 +15,7 @@ module ManifestMerge
                 @contents = []
                 f.each_line do |l|
                     parts = l.split
-                    @contents << Content.new(Integer.new(parts[0]),parts[1])
+                    @contents << Content.new(Integer(parts[0]),parts[1])
                 end
             else
                 @revnum = nil
@@ -30,7 +30,6 @@ module ManifestMerge
             ls << @uuid.to_s
             @contents.each do |l|
                 ls << [l.revnum.to_s, l.fname].join(' ')
-                ls << [l[0].to_s,l[1].to_s].join(' ')
             end
             ls.join("\n")
         end
@@ -56,9 +55,36 @@ module ManifestMerge
         end
     end
 
+    def name_revlog_map(revision)
+        d = data(revision)
+        m = {}
+        d.contents.each do |c|
+            m[c.fname] = Revlog.new(c.fname, @basedir)
+        end
+        m
+    end
+
+    def fetch_from(otherman, otherrev, newrev, revmap)
+        newdata = ManifestData.new
+        newdata.revnum = newrev
+        revmap[otherrev] = newrev
+        rls = otherman.name_revlog_map(otherrev)
+        otherman.data(otherrev).contents.each do |c|
+            newdata.add_content(revmap[c.revnum], c.fname)
+            r = Revlog.new(c.fname, @basedir)
+            myrev = revmap[c.revnum]
+            myfilecontent = StringIO.new(rls[c.fname].content(c.revnum)) 
+            if r.created?
+                r.commit(myrev, myfilecontent)
+            else
+                r.create(myrev, myfilecontent)
+            end
+        end
+        add_revision(newdata)
+    end
+
     def add_revision(newdata)
         s = newdata.to_s
-        #@manlog.add_revision_contents(newdata.revnum, s)
         @manlog.commit(newdata.revnum, StringIO.new(s))
     end
 
@@ -72,24 +98,25 @@ module ManifestMerge
     end
 
     def commit(basedir, filelist, newrevision)
-        p "MANIFEST COMMIT #{newrevision}"
         curdata = nil
         File.open(@full_fpath, 'r') do |f|
             curdata = ManifestData.new(f)
         end
+        newdata = ManifestData.new
+        newdata.revnum = newrevision
         filelist.each do |fname|
+            if not curdata.contents.map {|c| c.fname}.include?(fname)
+                newdata.add_content(newrevision, fname)
+            end
             rl = Revlog.new(fname)
             File.open(File.join(basedir, fname), 'r') do |f|
                 if not rl.created?
-                    p "CREATING #{fname} ##{newrevision}"
                     rl.create(newrevision, f)
                 else
                     rl.commit(newrevision,f)
                 end
             end
         end
-        newdata = ManifestData.new
-        newdata.revnum = newrevision
         curdata.contents.each do |c|
             if filelist.include?(c.fname)
                 c.revnum = newrevision

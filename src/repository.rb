@@ -195,14 +195,18 @@ module Repository
                     #topological order means only new revision number is this one (make nextrevision)
                     #with every new one, modify some record that maps revision renumberings
                     #map revnum and each content's revnum (if not mapped, identity)
-                newrev = Manifest::ManifestData.new
-                newrev.revnum = mydag.nextrevision
-                revmap[revision.revnum] = newrev.revnum
-                revision.contents.each do |c|
-                    newrev.add_content(revmap[c.revnum],c.fname)
-                end
+                #TODO: handle the files
+                #something in Manifest to copy from other? needs to ignore Dir.pwd
+                newrev = mydag.nextrevision
+                myman.fetch_from(man,revision.revnum,newrev,revmap)
+                #newrev = Manifest::ManifestData.new
+                #newrev.revnum = mydag.nextrevision
+                #revmap[revision.revnum] = newrev.revnum
+                #revmap[revision.revnum] = newrev
+                #revision.contents.each do |c|
+                #    newrev.add_content(revmap[c.revnum],c.fname)
+                #end
                 #newrev should be ready to be merge_committed
-                p "MERGING UNDER WITH REVISION #{newrev.revnum}"
                 mydag.merge_revision_under(newrev, dag.parents(revision.revnum).map {|r| revmap[r]})
             end
         end

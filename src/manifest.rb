@@ -39,7 +39,7 @@ class Manifest
                 end
             end
         end
-        @manlog = Revlog.new(@full_fpath, data_path, index_path) #revlog representing this manifest file
+        @manlog = Revlog.new(MANIFEST_REL_PATH, @basedir, data_path, index_path) #revlog representing this manifest file
     end
 
     def create()

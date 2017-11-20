@@ -95,11 +95,12 @@ class RevisionDAG < Hash
         save
     end
 
-    def merge_revision_under(newdata, parents)#, manifest)
-        Manifest.new(@base).add_revision(newdata)
+    def merge_revision_under(newrevnum, parents)#, manifest)
+        #Manifest.new(@base).add_revision(newdata)
+        #TODO: DO THE FILES
         #Manifest.new.add_revision(newdata)
         parents.each do |p|
-            self[p] << newdata.revnum    
+            self[p] << newrevnum    
         end
     end
 

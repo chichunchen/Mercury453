@@ -12,10 +12,14 @@ class Revlog
     include Zlib
 
     # initialize a new revlog for a given file
-    def initialize(fname, datafile=nil, indexfile=nil)
-        @fname = File.absolute_path(fname, Dir.pwd)
-        indexdir = File.join HIDDEN_DIR, "index"
-        datadir = File.join HIDDEN_DIR, "data"
+    def initialize(fname, basedir=nil, datafile=nil, indexfile=nil)
+        base = basedir || Dir.pwd
+        @fname = File.absolute_path(fname, base)
+        if @fname == fname
+            raise "CONSTRUCTED WITH ABSOLUTE PATH #{fname}"
+        end
+        indexdir = File.join base, HIDDEN_DIR, "index"
+        datadir = File.join base, HIDDEN_DIR, "data"
         @indexfile = indexfile || (File.join indexdir, fname)
         @datafile = datafile || (File.join datadir, fname)
         [indexdir, datadir].each do |d|
@@ -28,7 +32,6 @@ class Revlog
     #NOTE: create() instead of new(); new() is the constructor
     # add a revision
     def create(revision=0, content_io=nil)
-        p "CREATING WITH REVISION #{revision} to #{@indexfile}"
         # initialize datafile with compressed file @fname
         if content_io.nil?
             compress_file_lines = Deflate.deflate(File.read(@fname))
@@ -74,13 +77,11 @@ class Revlog
     
     # add file content as a new revision
     def commit(newrevision, content_io=nil)
-        p "COMMITTING WITH REVISION #{newrevision} to #{@indexfile}"
-        p "BEFORE COMMIT, content is"
-        File.open(@datafile, "r") do |f| p f.read end
         if content_io.nil?
             compress_file_lines = Deflate.deflate(File.read(@fname))
         else
-            compress_file_lines = Deflate.deflate(content_io.read)
+            cont = content_io.read
+            compress_file_lines = Deflate.deflate(cont)
         end
 
         # append current file fname to datafile
@@ -100,8 +101,6 @@ class Revlog
             index_write_row(f, newrevision.to_s,
                             new_offset.to_s, length.to_s)
         end
-        p "AFTER COMMIT, content is"
-        File.open(@datafile, "r") do |f| p f.read end
     end
 
     private
