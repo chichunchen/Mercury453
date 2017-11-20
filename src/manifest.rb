@@ -1,6 +1,9 @@
 require_relative 'revlog'
 require_relative 'mergemodules/manifestmerge'
-HIDDEN_DIR = ".repository"
+require 'fileutils'
+FIRST_REV ||= 0
+FIRST_REV_UUID ||= -1
+HIDDEN_DIR ||= ".repository"
 MANIFEST_NAME = "manifest.rl"
 MANIFEST_REL_PATH = File.join HIDDEN_DIR, "manifest", MANIFEST_NAME
 MANIFEST_INDEX_F = File.join HIDDEN_DIR, "manifest", "index", MANIFEST_NAME
@@ -11,17 +14,33 @@ class Manifest
 
     def initialize(basedir=nil)
         @basedir = basedir || Dir.pwd
-        full_path = File.join @basedir, MANIFEST_REL_PATH 
+        @full_fpath = File.join @basedir, MANIFEST_REL_PATH 
         data_path = File.join @basedir, MANIFEST_DATA_F
         index_path = File.join @basedir, MANIFEST_INDEX_F
-        @manlog = Revlog.new(full_path, data_path, index_path) #revlog representing this manifest file
+        if File.directory?(File.join @basedir, HIDDEN_DIR)
+            [@full_fpath, data_path, index_path].each do |p|
+                d = File.dirname(p)
+                unless File.directory?(d)
+                    FileUtils.mkdir_p(d)
+                end
+            end
+        end
+        @manlog = Revlog.new(@full_fpath, data_path, index_path) #revlog representing this manifest file
     end
 
-    def create(initialrevision)
+    def create()
+        newdata = ManifestData.new
+        newdata.revnum = FIRST_REV
+        newdata.uuid = FIRST_REV_UUID
+        File.open(@full_fpath, "w") do |f|
+            f.write(newdata.to_s)
+        end
+        @manlog.create(FIRST_REV)
     end
 
     #def commit(filelist, newrevision)
     def commit(filelist, newrevision, path='.repository/.stage/')
+        #commit each file
     end
 
     def checkout(revision)
