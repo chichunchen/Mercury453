@@ -62,9 +62,14 @@ class Revlog
     end
     
     # add file content as a new revision
-    def commit(newrevision)
+    def commit(newrevision, content_io=nil)
+        if content_io.nil?
+            compress_file_lines = Deflate.deflate(File.read(@fname))
+        else
+            compress_file_lines = Deflate.deflate(content_io.read)
+        end
+
         # append current file fname to datafile
-        compress_file_lines = Deflate.deflate(File.read(@fname))
         length = IO.readlines(@datafile).size
 
         File.open(@datafile, "a") do |append|
