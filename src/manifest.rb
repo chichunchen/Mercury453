@@ -1,5 +1,6 @@
 require_relative 'revlog'
 require_relative 'mergemodules/manifestmerge'
+FIRST_REV ||= 0
 HIDDEN_DIR ||= ".repository"
 MANIFEST_NAME = "manifest.rl"
 MANIFEST_REL_PATH = File.join HIDDEN_DIR, "manifest", MANIFEST_NAME
@@ -17,7 +18,7 @@ class Manifest
         @manlog = Revlog.new(full_path, data_path, index_path) #revlog representing this manifest file
     end
 
-    def create(initialrevision)
+    def create()
     end
 
     def commit(filelist, newrevision)

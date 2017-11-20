@@ -1,6 +1,8 @@
 require 'fileutils'
 require 'tsort'
 
+FIRST_REV ||= 0
+
 class RevisionDAG < Hash
     include TSort
 
@@ -110,7 +112,7 @@ module RepoMerge
 
     module RepoClassMethods
         DAG_LOC = ".repository/revisions.marshal"
-        DEFAULT_DAG = {0 => []}
+        DEFAULT_DAG = {FIRST_REV => []}
         def dag
             return @dag if @dag
             begin

@@ -4,6 +4,7 @@ require 'zlib'
 require_relative 'mergemodules/revlogmerge'
 
 HIDDEN_DIR ||= ".repository"
+FIRST_REV ||= 0
 
 # repository should create ./HIDDEN_DIR/index and ./HIDDEN_DIR/data for Revlog
 class Revlog
@@ -30,7 +31,7 @@ class Revlog
         # initialize indexfile
         File.open(@indexfile, "w") do |f|
             index_write_row f, "rev", "offset", "length"
-            index_write_row f, "0", "0", line_count_to_s(@datafile)
+            index_write_row f, FIRST_REV.to_s, "0", line_count_to_s(@datafile)
         end
     end
 
