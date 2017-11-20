@@ -1,7 +1,9 @@
 require 'fileutils'
 require 'tsort'
 
-class BackedHash < Hash
+FIRST_REV ||= 0
+
+class RevisionDAG < Hash
     include TSort
 
     attr_accessor :f
@@ -9,7 +11,7 @@ class BackedHash < Hash
     @@loadproc = Proc.new { |base|
         base = base || Dir.pwd
         Proc.new { |bh|
-            if bh.class == BackedHash
+            if bh.class == RevisionDAG
                 bh.f = File.absolute_path(bh.f, base)
             end
             bh
@@ -42,6 +44,9 @@ class BackedHash < Hash
 
     def []=(key,val)
         ret = super(key,val)
+        val.each do |e|
+            self[e] ||= []
+        end
         save
         ret
     end
@@ -71,6 +76,37 @@ class BackedHash < Hash
         max + 1
     end
 
+    def parents(node)
+        ps = []
+        self.each_key do |k|
+            ps << k if self[k].include? node
+        end
+        ps
+    end
+
+    def add_revision(newrevid, parentrevid)
+        self[parentrevid] << newrevid
+    end
+
+    def merge_revision_under(newdata, parents)#, manifest)
+        #manifest.add_revision(newdata)
+        Manifest.new.add_revision(newdata)
+        parents.each do |p|
+            self[p] << newdata.revnum    
+        end
+    end
+
+    def history
+        s = ""
+        self.each_key do |k|
+            id = k
+            ps = parents(k)
+            s += "Revision ##{id}; Parent(s): #{ps}\n"
+        end
+
+        s
+    end
+
 end
 
 module RepoMerge
@@ -81,19 +117,19 @@ module RepoMerge
 
     module RepoClassMethods
         DAG_LOC = ".repository/revisions.marshal"
-        DEFAULT_DAG = {1 => []}
+        DEFAULT_DAG = {FIRST_REV => []}
         def dag
             return @dag if @dag
             begin
                 File.open(DAG_LOC, "r") do |f|
-                    @dag = Marshal::load(f, BackedHash.loadproc(nil))
+                    @dag = Marshal::load(f, RevisionDAG.loadproc(nil))
                 end
             rescue Errno::ENOENT
                 d = File.dirname(DAG_LOC)
                 unless File.directory?(d)
                     FileUtils.mkdir_p(d)
                 end
-                @dag = BackedHash.new(DAG_LOC)
+                @dag = RevisionDAG.new(DAG_LOC)
                 @dag.init(DEFAULT_DAG)
                 @dag
             end
@@ -105,7 +141,7 @@ module RepoMerge
             @dag = d
         end
 
-            end
+    end
 end
 
 
@@ -115,10 +151,13 @@ module Repo
     include RepoMerge
 end
 
-p Repo.nextrevision
+#p Repo.dag.nextrevision
+Repo.dag[0] = [1,2]
 Repo.dag[1] = [2]
-p Repo.nextrevision
-p Repo.dag
-Repo.dag[2] = []
-p Repo.dag
+#p Repo.dag.parents(2)
+puts Repo.dag.history
+#p Repo.nextrevision
+#p Repo.dag
+#Repo.dag[2] = []
+#p Repo.dag
 =end

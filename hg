@@ -4,6 +4,8 @@ cmd       = ARGV[0]
 argv_size = ARGV.size
 args      = ARGV[1..argv_size]
 
+require_relative "src/repository" 
+
 def instructions
   puts "
  ▄▄       ▄▄  ▄▄▄▄▄▄▄▄▄▄▄  ▄▄▄▄▄▄▄▄▄▄▄  ▄▄▄▄▄▄▄▄▄▄▄  ▄         ▄  ▄▄▄▄▄▄▄▄▄▄▄  ▄▄▄▄▄▄▄▄▄▄▄  ▄▄▄▄▄▄▄▄▄▄▄  ▄                  ▄▄▄▄▄▄▄▄▄        ▄▄▄▄
@@ -45,25 +47,25 @@ end
 
 if (cmd)
   if cmd == "create"
-    puts "command not supported"
+    Repository.create()
 
   elsif cmd == "checkout"
-    puts "command not supported"
+    Repository.checkout(args[0])
   
   elsif cmd == "add"
-    puts "command not supported"
+    Repository.add(args)
   
   elsif cmd == "delete"
-    puts "command not supported"
+    Repository.delete(args)
   
   elsif cmd == "commit"
-    puts "command not supported"
+    Repository.commit()
   
-  elsif cmd == "stat"
-    puts "command not supported"
+  elsif cmd == "stat" or cmd == "status"
+    Repository.status()
   
   elsif cmd == "history"
-    puts "command not supported"
+    Repository.history()
   
   elsif cmd == "merge"
     puts "command not supported"

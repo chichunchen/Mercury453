@@ -3,7 +3,7 @@ require 'scanf'
 require 'zlib'
 require_relative 'mergemodules/revlogmerge'
 
-HIDDEN_DIR = ".repository"
+HIDDEN_DIR ||= ".repository"
 
 # repository should create ./HIDDEN_DIR/index and ./HIDDEN_DIR/data for Revlog
 class Revlog
