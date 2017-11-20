@@ -202,8 +202,11 @@ module Repository
     # Main procedure: display a list of each commit, its parent(s), revision
     # number, and commit message
     # Exception: if current directory is not a repository, fail
-    puts('Repository.history not implemented')
-  end	
+    text = File.read('.repository/commit_history.txt')
+    puts(text)
+  end
+  
+  #--------------------------------------------------------------------
   
   protected
   
@@ -230,6 +233,8 @@ if __FILE__ == $0
       Repository.merge()
     when 'status'
       Repository.status()
+    when 'history'
+      Repository.history()
     else
       puts("unknown repository command: " + ARGV[0])
     end
