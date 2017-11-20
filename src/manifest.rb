@@ -21,7 +21,7 @@ class Manifest
     end
 
     #def commit(filelist, newrevision)
-    def commit(path, filelist, newrevision)
+    def commit(filelist, newrevision, path='.repository/.stage/')
     end
 
     def checkout(revision)

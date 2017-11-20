@@ -13,28 +13,29 @@ $logger = Logger.new(STDOUT)
 #logger.level = Logger::INFO
 $logger.level = Logger::DEBUG
 
+$logger.formatter = proc do |severity, datetime, progname, msg|
+   "#{msg}\n"
+end
   
 #============================================================================
 module Repository
-=begin
   #============================================================================
-  # temporary placeholder for dag functionality, i.e. delete when dag ready
-  module dag
+  # temporary placeholder for Dag functionality, i.e. delete when Dag ready
+  module Dag
     
-    def dag.next_rev_int()
+    def Dag.next_rev_int()
       return rand(50)
     end
     
-    def dag.add_rev(parent_revs, new_rev_int)
-      puts '...calling dag.add_rev'
+    def Dag.add_rev(parent_revs, new_rev_int)
+      puts '...calling Dag.add_rev'
     end
   
-    def dag.history()
-      puts '...calling dag.history'
+    def Dag.history()
+      puts '...calling Dag.history'
     end
     
   end
-=end
 
   include RepoMerge
   # This is the Repository module for top level dvcs functionality.
@@ -90,28 +91,32 @@ module Repository
     # Exception:      if one or more files are staged and one or more arguments 
     #                 are provided, fail
 
-    cur_rev_int = Repository.current_revision()
-    new_rev_int = dag.next_rev_int()
+    files = Dir[".repository/.stage/*"]
+    if files.size == 0
+      $logger.warn('WARNING: no files staged to commit, commit ignored')
+      return
+    end
+    cur_rev_int = Repository.cur_rev()
+    new_rev_int = Dag.next_rev_int()
     
     # note, new_rev_hash will likely be moved to manifest
     new_rev_hash = SecureRandom.hex
 
-    logger.info('cur_rev_int: ' + new_rev_hash)
-    logger.info('new_rev_hash: ' + new_rev_hash)
-    logger.info('new_rev_hash: ' + new_rev_hash)
+    $logger.info('cur_rev_int: ' + new_rev_int.to_s)
+    $logger.info('new_rev_hash: ' + new_rev_hash)
+    $logger.info('new_rev_hash: ' + new_rev_hash)
     
-    files = Dir[".repository/.stage/*"]
     #logger.debug(files)
     manifest = Manifest.new('.')
-    manifest.commit(files, new_revision)
+    manifest.commit(files, new_rev_int)
     open('.repository/commit_history.txt', 'a') { |f|
-       f.puts("\n" + new_revision)
+       f.puts("\n" + new_rev_int.to_s)
     }
     
     
     
 
-    #dag.add_rev()
+    #Dag.add_rev()
     FileUtils.rm_rf('.repository/.stage/.') 
   end
 
@@ -185,12 +190,12 @@ module Repository
     # is determined to be identical to the current repository, fail
     puts('Repository.merge not implemented')
     #TODO: error checking
-    mydag = dag
+    myDag = Dag
     myman = Manifest.new
-    myrevs = mydag.each_revision.to_a
+    myrevs = myDag.each_revision.to_a
     Dir.chdir(path_str) do
         man = Manifest.new
-        dag.each_revision(man) do |revision|
+        Dag.each_revision(man) do |revision|
             if myrevs.map {|r| r.uuid}.include?(revision.uuid)
                 next
             else
