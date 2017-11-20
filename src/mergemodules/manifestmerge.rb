@@ -19,7 +19,7 @@ module ManifestMerge
                 end
             else
                 @revnum = nil
-                @uuid = newuuid
+                @uuid = ManifestMerge::newuuid
                 @contents = []
             end
         end
@@ -61,8 +61,13 @@ module ManifestMerge
         @manlog.add_revision_contents(newdata.revnum, s)
     end
 
-    def newuuid
+    def self.newuuid
         SecureRandom.hex
+    end
+
+    def newuuid
+        #SecureRandom.hex
+        ManifestMerge::newuuid
     end
 
     module ManifestClassMethods
