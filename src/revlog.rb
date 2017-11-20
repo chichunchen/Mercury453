@@ -28,8 +28,7 @@ class Revlog
     #NOTE: create() instead of new(); new() is the constructor
     # add a revision
     def create(revision=0, content_io=nil)
-        p "CREATING WITH REVISION"
-        p revision
+        p "CREATING WITH REVISION #{revision} to #{@indexfile}"
         # initialize datafile with compressed file @fname
         if content_io.nil?
             compress_file_lines = Deflate.deflate(File.read(@fname))
@@ -51,6 +50,7 @@ class Revlog
     def content(revision)
         #line = revision+1
         #parse = parse_indexfile_line get_indexfile_with_line(line)
+        p "CONTENT #{revision} for #{@indexfile}, map is"
         p revision_line_map
         parse = parse_indexfile_line revision_line_map[revision]
         offset = parse[1]
@@ -78,8 +78,9 @@ class Revlog
     
     # add file content as a new revision
     def commit(newrevision, content_io=nil)
-        p "COMMITTING WITH REVISION"
-        p newrevision
+        p "COMMITTING WITH REVISION #{newrevision} to #{@indexfile}"
+        p "BEFORE COMMIT, content is"
+        File.open(@datafile, "r") do |f| p f.read end
         if content_io.nil?
             compress_file_lines = Deflate.deflate(File.read(@fname))
         else
@@ -103,6 +104,10 @@ class Revlog
             index_write_row(f, newrevision.to_s,
                             new_offset.to_s, length.to_s)
         end
+        p "AFTER COMMIT, map is"
+        p revision_line_map
+        p "AFTER COMMIT, content is"
+        File.open(@datafile, "r") do |f| p f.read end
     end
 
     private
@@ -122,7 +127,7 @@ class Revlog
             m = {}
             IO.readlines(@indexfile).each do |l|
                 parse = parse_indexfile_line l
-                m[parse[0]] = l
+                m[parse[0]] = l if parse[0]
             end
             m
         end

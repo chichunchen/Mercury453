@@ -202,8 +202,7 @@ module Repository
                     newrev.add_content(revmap[c.revnum],c.fname)
                 end
                 #newrev should be ready to be merge_committed
-                p "MERGING UNDER WITH REVISION"
-                p newrev.revnum
+                p "MERGING UNDER WITH REVISION #{newrev.revnum}"
                 mydag.merge_revision_under(newrev, dag.parents(revision.revnum).map {|r| revmap[r]})
             end
         end

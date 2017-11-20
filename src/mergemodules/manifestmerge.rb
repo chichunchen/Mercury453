@@ -72,6 +72,7 @@ module ManifestMerge
     end
 
     def commit(basedir, filelist, newrevision)
+        p "MANIFEST COMMIT #{newrevision}"
         curdata = nil
         File.open(@full_fpath, 'r') do |f|
             curdata = ManifestData.new(f)
@@ -80,8 +81,7 @@ module ManifestMerge
             rl = Revlog.new(fname)
             File.open(File.join(basedir, fname), 'r') do |f|
                 if not rl.created?
-                    p 'CREATING'
-                    p newrevision
+                    p "CREATING #{fname} ##{newrevision}"
                     rl.create(newrevision, f)
                 else
                     rl.commit(newrevision,f)
