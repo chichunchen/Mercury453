@@ -89,6 +89,17 @@ class RevisionDAG < Hash
         end
     end
 
+    def history
+        s = ""
+        self.each_key do |k|
+            id = k
+            ps = parents(k)
+            s += "Revision ##{id}; Parent(s): #{ps}\n"
+        end
+
+        s
+    end
+
 end
 
 module RepoMerge
@@ -133,10 +144,11 @@ module Repo
     include RepoMerge
 end
 
-p Repo.dag.nextrevision
-Repo.dag[1] = [2,3]
-Repo.dag[2] = [3]
-p Repo.dag.parents(3)
+#p Repo.dag.nextrevision
+Repo.dag[0] = [1,2]
+Repo.dag[1] = [2]
+#p Repo.dag.parents(2)
+puts Repo.dag.history
 #p Repo.nextrevision
 #p Repo.dag
 #Repo.dag[2] = []

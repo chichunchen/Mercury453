@@ -220,7 +220,8 @@ module Repository
     # Main procedure: display a list of each commit, its parent(s), revision
     # number, and commit message
     # Exception: if current directory is not a repository, fail
-    puts('Repository.history not implemented')
+    #puts('Repository.history not implemented')
+    puts dag.history
   end	
   
   protected
