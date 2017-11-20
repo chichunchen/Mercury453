@@ -84,7 +84,7 @@ class RevisionDAG < Hash
         ps
     end
 
-    def add_revision_under(newdata, parents)#, manifest)
+    def merge_revision_under(newdata, parents)#, manifest)
         #manifest.add_revision(newdata)
         Manifest.new.add_revision(newdata)
         parents.each do |p|

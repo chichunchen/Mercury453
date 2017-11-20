@@ -218,7 +218,7 @@ module Repository
                 #somedag.add_revision_under(newrevisiondata, parents, manifest)
                     #manifest.add_revision(newrevisiondata), + bookkeeping
                     #or, somemanifest.add_revision_under(newrevisiondata, parents) NOT IDEAL, PARENTS UN-NEEDED
-                mydag.add_revision_under(newrev, dag.parents(revision.revnum).map {|r| revmap[r]}, myman)
+                mydag.merge_revision_under(newrev, dag.parents(revision.revnum).map {|r| revmap[r]}, myman)
             end
         end
         #enumerate revisions in tsorted order (with uuids)
