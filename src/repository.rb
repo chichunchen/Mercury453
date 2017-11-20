@@ -2,10 +2,12 @@
 
 require_relative "revlog"
 require_relative "manifest"
+require_relative "mergemodules/repomerge"
 require 'fileutils'
 
 #============================================================================
 module Repository
+  include RepoMerge
   # This is the Repository module for top level dvcs functionality.
 
   # External methods
@@ -122,7 +124,45 @@ module Repository
     # merged (see Analysis document)
     # Exception: if path does not contain a repository, or if the repository 
     # is determined to be identical to the current repository, fail
-    puts('Repository.mrege not implemented')
+    puts('Repository.merge not implemented')
+    #TODO: error checking
+    mydag = dag
+    myman = Manifest.new
+    myrevs = mydag.each_revision.to_a
+    revmap = {}
+    Dir.chdir(path_str) do
+        man = Manifest.new
+        dag.each_revision(man) do |revision|
+            if myrevs.map {|r| r.uuid}.include?(revision.uuid)
+                revmap[revision.revnum] = revision.revnum
+                next
+            else
+                #this is a new revision
+                #change the data and commit it
+                    #topological order means only new revision number is this one (make nextrevision)
+                    #with every new one, modify some record that maps revision renumberings
+                    #map revnum and each content's revnum (if not mapped, identity)
+                newrev = Manifest::ManifestData.new
+                newrev.revnum = mydag.nextrevision
+                revmap[revision.revnum] = newrev.revnum
+                revision.contents.each do |c|
+                    newrev.add_content(revmap[c.revnum],c.fname)
+                end
+                #newrev should be ready to be merge_committed
+                #all content revnums should be defined
+                #who's the parent? : _dag.parents(revnum)
+                #somedag.add_revision_under(newrevisiondata, parents, manifest)
+                    #manifest.add_revision(newrevisiondata), + bookkeeping
+                    #or, somemanifest.add_revision_under(newrevisiondata, parents) NOT IDEAL, PARENTS UN-NEEDED
+                mydag.add_revision_under(newrev, dag.parents(revision.revnum).map {|r| revmap[r]}, myman)
+            end
+        end
+        #enumerate revisions in tsorted order (with uuids)
+            #if matches something in me, skip it
+            #else, get all files changed in that revision (revision = that revision #)
+            #for each file, commit those contents as new revision
+            #this is true for the manifest too! (possible content changes)
+    end
     
   end
 
@@ -180,7 +220,8 @@ module Repository
     # Main procedure: display a list of each commit, its parent(s), revision
     # number, and commit message
     # Exception: if current directory is not a repository, fail
-    puts('Repository.history not implemented')
+    #puts('Repository.history not implemented')
+    puts dag.history
   end	
   
   protected
@@ -208,6 +249,8 @@ if __FILE__ == $0
       Repository.merge()
     when 'status'
       Repository.status()
+    when 'history'
+      Repository.history()
     else
       puts("unknown repository command: " + ARGV[0])
     end

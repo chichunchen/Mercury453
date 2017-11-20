@@ -1,0 +1,13 @@
+GEM
+  remote: https://rubygems.org/
+  specs:
+    minitest-hooks (1.4.2)
+
+PLATFORMS
+  ruby
+
+DEPENDENCIES
+  minitest-hooks
+
+BUNDLED WITH
+   1.16.0
