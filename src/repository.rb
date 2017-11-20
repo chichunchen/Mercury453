@@ -19,26 +19,9 @@ end
   
 #============================================================================
 module Repository
-  #============================================================================
-  # temporary placeholder for Dag functionality, i.e. delete when Dag ready
-  module Dag
-    
-    def Dag.next_rev_int()
-      return rand(50)
-    end
-    
-    def Dag.add_rev(parent_revs, new_rev_int)
-      puts '...calling Dag.add_rev'
-    end
-  
-    def Dag.history()
-      puts '...calling Dag.history'
-    end
-    
-  end
+  # This is the Repository module for top level dvcs functionality.
 
   include RepoMerge
-  # This is the Repository module for top level dvcs functionality.
 
   # External methods
   #--------------------------------------------------------------------
@@ -51,9 +34,9 @@ module Repository
     # Exception: if the current directory is part of an existing repository, 
     #            fail	
 
-    puts '...Repository.create'
+    $logger.debug('...Repository.create')
     if File.exist?('.repository')
-      puts 'repository already exists...create ignored'
+      $logger.info('WARNING: repository already exists...create ignored')
     else
       Dir.mkdir('.repository')
       Dir.mkdir('.repository/.stage')
@@ -63,7 +46,9 @@ module Repository
       File.open('.repository/current_revision.txt', 'w') do |f| 
         f.write(-1) 
       end
+      $logger.info('NEW REPOSITORY CREATED')
     end    
+
   end
 
   #--------------------------------------------------------------------
@@ -97,7 +82,7 @@ module Repository
       return
     end
     cur_rev_int = Repository.cur_rev()
-    new_rev_int = Dag.next_rev_int()
+    new_rev_int = dag.nextrevision()
     
     # note, new_rev_hash will likely be moved to manifest
     new_rev_hash = SecureRandom.hex
@@ -107,8 +92,11 @@ module Repository
     $logger.info('new_rev_hash: ' + new_rev_hash)
     
     #logger.debug(files)
-    manifest = Manifest.new('.')
-    manifest.commit(files, new_rev_int)
+    
+    # TODO: uncomment code below when manifest is ready
+    #manifest = Manifest.new('.')
+    #manifest.commit(files, new_rev_int)
+
     open('.repository/commit_history.txt', 'a') { |f|
        f.puts("\n" + new_rev_int.to_s)
     }
@@ -311,8 +299,8 @@ end
 
 # check if repository is called from commandline, if so execute command
 if __FILE__ == $0
-  puts('Repository called from main')
-  puts ARGV
+  $logger.info('repository.rb called from main')
+
   if ARGV[0]
     case ARGV[0]
     when 'create'
@@ -336,6 +324,6 @@ if __FILE__ == $0
     end
   end
 else
-  puts("Repository module loaded")
+  $logger.debug("Repository module loaded")
 end
 
