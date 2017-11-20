@@ -36,8 +36,7 @@ class Revlog
 
     # return the content of a given revision
     def content(revision)
-        line = revision+1
-        parse = parse_indexfile_line get_indexfile_with_line(line)
+        parse = parse_indexfile_line get_indexfile_with_revision(revision)
         offset = parse[1]
         length = parse[2]
         str = ""
@@ -101,7 +100,22 @@ class Revlog
             IO.readlines(filename).size.to_s
         end
 
-        # return a line with given line number
+        # return a row with given revision number
+        def get_indexfile_with_revision revision
+            result = nil
+            File.open(@indexfile, "r") do |f|
+                f.each_line do |line|
+                    row = parse_indexfile_line(line)
+                    if row[0] == revision
+                        result = line
+                        break
+                    end
+                end
+            end
+            return result if result
+        end
+
+        # return a row with given line number
         def get_indexfile_with_line number
             IO.readlines(@indexfile)[number]
         end
