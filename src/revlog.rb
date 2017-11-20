@@ -4,7 +4,6 @@ require 'zlib'
 require_relative 'mergemodules/revlogmerge'
 
 HIDDEN_DIR ||= ".repository"
-FIRST_REV ||= 0
 
 # repository should create ./HIDDEN_DIR/index and ./HIDDEN_DIR/data for Revlog
 class Revlog
@@ -21,7 +20,7 @@ class Revlog
 
     #NOTE: create() instead of new(); new() is the constructor
     # add a revision
-    def create()
+    def create(revision=0)
         # initialize datafile with compressed file @fname
         compress_file_lines = Deflate.deflate(File.read(@fname))
         File.open(@datafile, "w") do |f|
@@ -31,7 +30,7 @@ class Revlog
         # initialize indexfile
         File.open(@indexfile, "w") do |f|
             index_write_row f, "rev", "offset", "length"
-            index_write_row f, FIRST_REV.to_s, "0", line_count_to_s(@datafile)
+            index_write_row f, revision.to_s, "0", line_count_to_s(@datafile)
         end
     end
 
