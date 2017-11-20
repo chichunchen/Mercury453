@@ -84,6 +84,10 @@ class RevisionDAG < Hash
         ps
     end
 
+    def add_revision(newrevid, parentrevid)
+        self[parentrevid] << newrevid
+    end
+
     def merge_revision_under(newdata, parents)#, manifest)
         #manifest.add_revision(newdata)
         Manifest.new.add_revision(newdata)
