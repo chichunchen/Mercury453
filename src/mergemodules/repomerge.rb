@@ -1,7 +1,7 @@
 require 'fileutils'
 require 'tsort'
 
-class BackedHash < Hash
+class RevisionDAG < Hash
     include TSort
 
     attr_accessor :f
@@ -9,7 +9,7 @@ class BackedHash < Hash
     @@loadproc = Proc.new { |base|
         base = base || Dir.pwd
         Proc.new { |bh|
-            if bh.class == BackedHash
+            if bh.class == RevisionDAG
                 bh.f = File.absolute_path(bh.f, base)
             end
             bh
@@ -42,6 +42,9 @@ class BackedHash < Hash
 
     def []=(key,val)
         ret = super(key,val)
+        val.each do |e|
+            self[e] ||= []
+        end
         save
         ret
     end
@@ -71,6 +74,21 @@ class BackedHash < Hash
         max + 1
     end
 
+    def parents(node)
+        ps = []
+        self.each_key do |k|
+            ps << k if self[k].include? node
+        end
+        ps
+    end
+
+    def add_revision_under(newdata, parents, manifest)
+        manifest.add_revision(newdata)
+        parents.each do |p|
+            self[p] << newdata.revnum    
+        end
+    end
+
 end
 
 module RepoMerge
@@ -81,19 +99,19 @@ module RepoMerge
 
     module RepoClassMethods
         DAG_LOC = ".repository/revisions.marshal"
-        DEFAULT_DAG = {1 => []}
+        DEFAULT_DAG = {0 => []}
         def dag
             return @dag if @dag
             begin
                 File.open(DAG_LOC, "r") do |f|
-                    @dag = Marshal::load(f, BackedHash.loadproc(nil))
+                    @dag = Marshal::load(f, RevisionDAG.loadproc(nil))
                 end
             rescue Errno::ENOENT
                 d = File.dirname(DAG_LOC)
                 unless File.directory?(d)
                     FileUtils.mkdir_p(d)
                 end
-                @dag = BackedHash.new(DAG_LOC)
+                @dag = RevisionDAG.new(DAG_LOC)
                 @dag.init(DEFAULT_DAG)
                 @dag
             end
@@ -105,7 +123,7 @@ module RepoMerge
             @dag = d
         end
 
-            end
+    end
 end
 
 
@@ -115,10 +133,12 @@ module Repo
     include RepoMerge
 end
 
-p Repo.nextrevision
-Repo.dag[1] = [2]
-p Repo.nextrevision
-p Repo.dag
-Repo.dag[2] = []
-p Repo.dag
+p Repo.dag.nextrevision
+Repo.dag[1] = [2,3]
+Repo.dag[2] = [3]
+p Repo.dag.parents(3)
+#p Repo.nextrevision
+#p Repo.dag
+#Repo.dag[2] = []
+#p Repo.dag
 =end

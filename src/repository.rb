@@ -129,14 +129,32 @@ module Repository
     mydag = dag
     myman = Manifest.new
     myrevs = mydag.each_revision.to_a
+    revmap = {}
     Dir.chdir(path_str) do
         man = Manifest.new
         dag.each_revision(man) do |revision|
             if myrevs.map {|r| r.uuid}.include?(revision.uuid)
+                revmap[revision.revnum] = revision.revnum
                 next
             else
                 #this is a new revision
                 #change the data and commit it
+                    #topological order means only new revision number is this one (make nextrevision)
+                    #with every new one, modify some record that maps revision renumberings
+                    #map revnum and each content's revnum (if not mapped, identity)
+                newrev = Manifest::ManifestData.new
+                newrev.revnum = mydag.nextrevision
+                revmap[revision.revnum] = newrev.revnum
+                revision.contents.each do |c|
+                    newrev.add_content(revmap[c.revnum],c.fname)
+                end
+                #newrev should be ready to be merge_committed
+                #all content revnums should be defined
+                #who's the parent? : _dag.parents(revnum)
+                #somedag.add_revision_under(newrevisiondata, parents, manifest)
+                    #manifest.add_revision(newrevisiondata), + bookkeeping
+                    #or, somemanifest.add_revision_under(newrevisiondata, parents) NOT IDEAL, PARENTS UN-NEEDED
+                mydag.add_revision_under(newrev, dag.parents(revision.revnum).map {|r| revmap[r]}, myman)
             end
         end
         #enumerate revisions in tsorted order (with uuids)

@@ -1,6 +1,6 @@
 require_relative 'revlog'
 require_relative 'mergemodules/manifestmerge'
-HIDDEN_DIR = ".repository"
+HIDDEN_DIR ||= ".repository"
 MANIFEST_NAME = "manifest.rl"
 MANIFEST_REL_PATH = File.join HIDDEN_DIR, "manifest", MANIFEST_NAME
 MANIFEST_INDEX_F = File.join HIDDEN_DIR, "manifest", "index", MANIFEST_NAME
