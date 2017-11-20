@@ -249,6 +249,8 @@ if __FILE__ == $0
       Repository.merge()
     when 'status'
       Repository.status()
+    when 'history'
+      Repository.history()
     else
       puts("unknown repository command: " + ARGV[0])
     end
