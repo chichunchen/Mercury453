@@ -1,12 +1,17 @@
-require 'repository'
-require 'minitest/autorun'
+#!/usr/bin/ruby -w
+
+# 
+
+require "repository.rb"
+require "minitest/autorun"
 
 #=============================================================================
 class TestRepository < Minitest::Test 
 
   def setup
-    
+    # placeholder in case we want to setup test env    
   end
+  
 
   #----------------------------------------------------------------------
   def test_create
