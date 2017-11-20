@@ -58,7 +58,7 @@ class RevisionDAG < Hash
     end
 
     def each_revision(man, &block)
-        dag.tsort.map {|revnum| man.data(revnum)}.each(&block)
+        self.tsort.map {|revnum| man.data(revnum)}.each(&block)
     end
 
     def nextrevision

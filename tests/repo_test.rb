@@ -223,7 +223,6 @@ class TestRepository < Minitest::Test
         f.write("a")
     end
     Repository.merge('../repo1')
-    #Repository.help()
     Dir.chdir('..')
     FileUtils.rm_rf('.test')
  
