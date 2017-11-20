@@ -161,8 +161,3 @@ class Manifest
 
 end
 
-a = Manifest.new
-a.create()
-a.commit('filelist1',"8888")
-a.checkout("3333")
-
