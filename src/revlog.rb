@@ -51,7 +51,11 @@ class Revlog
 
     # return the content of a given revision
     def content(revision)
-        parse = parse_indexfile_line get_indexfile_with_revision(revision)
+        line = get_indexfile_with_revision(revision)
+        if line.nil?
+            raise "Revision does not exist: #{revision} for #{@fname}"
+        end
+        parse = parse_indexfile_line line
         offset = parse[1]
         length = parse[2]
         str = ""
@@ -77,6 +81,9 @@ class Revlog
     
     # add file content as a new revision
     def commit(newrevision, content_io=nil)
+        if not get_indexfile_with_revision(newrevision).nil?
+            raise "Committing already-existing revision: #{newrevision} for #{@fname}"
+        end
         if content_io.nil?
             compress_file_lines = Deflate.deflate(File.read(@fname))
         else
@@ -128,7 +135,7 @@ class Revlog
                     end
                 end
             end
-            return result if result
+            return result
         end
 
         # return a row with given line number

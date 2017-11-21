@@ -15,6 +15,9 @@ module ManifestMerge
                 @contents = []
                 f.each_line do |l|
                     parts = l.split
+                    if parts.length != 2
+                        next
+                    end
                     @contents << Content.new(Integer(parts[0]),parts[1])
                 end
             else
@@ -67,6 +70,7 @@ module ManifestMerge
     def fetch_from(otherman, otherrev, newrev, revmap)
         newdata = ManifestData.new
         newdata.revnum = newrev
+        newdata.uuid = otherman.data(otherrev).uuid
         revmap[otherrev] = newrev
         rls = otherman.name_revlog_map(otherrev)
         otherman.data(otherrev).contents.each do |c|
@@ -93,7 +97,6 @@ module ManifestMerge
     end
 
     def newuuid
-        #SecureRandom.hex
         ManifestMerge::newuuid
     end
 
@@ -107,12 +110,99 @@ module ManifestMerge
         current_data.revnum
     end
 
+    def merge(revision, newrevision, rdag) #might need dag; could be cleaner with passed lambda or something; 
+        #TODO: finish
+        #TODO: make sure not called on ancestors
+        curdata = current_data
+        mergedata = data(revision)
+        newdata = ManifestData.new
+        newdata.revnum = newrevision
+        #resolve conflicts, and copy non-conflicting members of curdata
+        conflicts = []
+        curdata.contents.each do |cc|
+            found = false
+            mergedata.contents.each do |mc|
+                if cc.fname == mc.fname && cc.revnum != mc.revnum
+                    lca, low = rdag.LCA(cc.revnum, mc.revnum)
+                    if not lca
+                        #linear; use lower
+                        newdata.add_content(low, cc.fname)
+                    else
+                        #TODO: resolve conflict
+                        #diff3
+                        #either way, use new revision number
+
+                        #make the three files
+                            #get the revlog
+                        rl = Revlog.new(cc.fname,@basedir)
+                            #get the three versions' contents
+                        left_c = rl.content(cc.revnum)
+                        left_f = File.join(HIDDEN_DIR, 'your_version.merge')
+                        right_c = rl.content(mc.revnum)
+                        right_f = File.join(HIDDEN_DIR, 'other_version.merge')
+                        parent_c = ""
+                        if lca != 0
+                            parent_c = rl.content(lca)
+                        end
+                        parent_f = File.join(HIDDEN_DIR, 'ancestor.merge')
+                            #dump them into a special place in HIDDEN_DIR
+                        File.open(left_f, 'w') do |l|
+                            l.write(left_c)
+                        end
+
+                        File.open(right_f, 'w') do |r|
+                            r.write(right_c)
+                        end
+                        File.open(parent_f, 'w') do |p|
+                            p.write(parent_c)
+                        end
+
+                        #diff3 _ _ _ -E -m
+                        #capture output and return code
+                        output = `diff3 #{left_f} #{parent_f} #{right_f} -E -m`
+
+                        #if failed, record the file
+                        if not $?.success?
+                            conflicts << cc.fname
+                        end
+
+                        #nuke files
+                        File.delete(left_f)
+                        File.delete(right_f)
+                        File.delete(parent_f)
+
+                        #commit output as new revision in revlog
+                        rl.commit(newrevision, StringIO.new(output))
+                        #store it in the manifest
+                        newdata.add_content(newrevision, cc.fname)
+                    end
+                    found = true
+                end
+            end
+            if not found
+                newdata.add_content(cc.revnum, cc.fname)
+            end
+        end
+
+        #copy unique members of mergedata
+        mergedata.contents.each do |mc|
+            if curdata.contents.find {|cc| cc.fname == mc.fname} == nil
+                newdata.add_content(mc.revnum, mc.fname)
+            end
+        end
+
+        #TODO: complete, check for conflicts
+        add_revision(newdata)
+        checkout(newrevision)
+        return conflicts
+    end
+
     def checkout(revision)
         @manlog.checkout(revision)
         #TODO: make this more intelligent. for now, nukes everything and then restores
 
         #nuke everything
-        Dir.entries(@basedir).reject {|e| e.start_with?('.')}.each do |fname|
+        Dir.entries(@basedir).reject {|e| e == '.' || e == '..' || e.start_with?(HIDDEN_DIR)}.each do |fname|
             File.delete(File.join(@basedir, fname))
         end
         
@@ -124,11 +214,9 @@ module ManifestMerge
         end
     end
 
+
     def commit(basedir, filelist, newrevision)
         curdata = current_data
-        #File.open(@full_fpath, 'r') do |f|
-        #    curdata = ManifestData.new(f)
-        #end
         newdata = ManifestData.new
         newdata.revnum = newrevision
         filelist.each do |fname|

@@ -44,8 +44,10 @@ class RevisionDAG < Hash
         self
     end
 
-
     def []=(key,val)
+        if key.nil?
+            raise "Cannot have nil revision number!"
+        end
         ret = super(key,val)
         save
         ret
@@ -82,6 +84,53 @@ class RevisionDAG < Hash
         max + 1
     end
 
+    def lowest(a,b)
+        a_parents = [a]
+        a_parents.each do |n|
+            if n == b
+                return a
+            end
+            a_parents += parents(n)
+        end
+        b_parents = [b]
+        b_parents.each do |n|
+            if n == a
+                return b
+            end
+            b_parents += parents(n)
+        end
+        nil
+    end
+
+    def LCA(a,b)
+        if a == b
+            parents(n1).first
+        else
+            a_parents = [a]
+            a_parents.each do |n|
+                if n == b
+                    return nil,lowest(a,b) #linear
+                end
+                parents(n).each do |p|
+                    a_parents << p
+                end
+            end
+            b_parents = [b]
+            b_parents.each do |n|
+                if n == a
+                    return nil,lowest(a,b) #linear
+                elsif a_parents.include?(n)
+                    return n,nil
+                end
+                parents(n).each do |p|
+                    b_parents << p
+                end
+            end
+
+            raise "Couldn't find root of dag! Arguments were #{a} and #{b} for dag #{self}"
+        end
+    end
+
     def parents(node)
         ps = []
         self.each_key do |k|
@@ -100,8 +149,11 @@ class RevisionDAG < Hash
         #TODO: DO THE FILES
         #Manifest.new.add_revision(newdata)
         parents.each do |p|
-            self[p] << newrevnum    
+            self[p] ||= []
+            self[p] << newrevnum
+            #self[p] << newrevnum    
         end
+        save
     end
 
     def history
@@ -126,22 +178,21 @@ module RepoMerge
     module RepoClassMethods
         DAG_LOC = ".repository/revisions.marshal"
         DEFAULT_DAG = {FIRST_REV => []}
-        def dag
+        def dag(base=nil)
+            base ||= Dir.pwd
+            loc = File.join(base, DAG_LOC)
             #return @dag if @dag
             begin
-                File.open(DAG_LOC, "r") do |f|
+                File.open(loc, "r") do |f|
                     #@dag = Marshal::load(f, RevisionDAG.loadproc(nil))
                     Marshal::load(f, RevisionDAG.loadproc(nil))
                 end
             rescue Errno::ENOENT
-                d = File.dirname(DAG_LOC)
+                d = File.dirname(loc)
                 unless File.directory?(d)
                     FileUtils.mkdir_p(d)
                 end
-                #@dag = RevisionDAG.new(DAG_LOC)
-                #@dag.init(DEFAULT_DAG)
-                #@dag
-                d = RevisionDAG.new(DAG_LOC)
+                d = RevisionDAG.new(loc)
                 d.init(DEFAULT_DAG)
                 d
             end
