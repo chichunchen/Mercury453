@@ -43,11 +43,6 @@ module Repository
 
   # External methods
   #--------------------------------------------------------------------
-  def Repository.cur_rev()
-    # Returns current revision
-    text = File.read('.repository/.current_revision.txt')
-    return text.to_i()
-  end
  
   def Repository.create()
     # Description:    initialize current directory as a new repository
