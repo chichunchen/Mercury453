@@ -194,6 +194,7 @@ module ManifestMerge
         #TODO: complete, check for conflicts
         add_revision(newdata)
         checkout(newrevision)
+        return conflicts
     end
 
     def checkout(revision)
