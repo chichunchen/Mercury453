@@ -15,6 +15,9 @@ module ManifestMerge
                 @contents = []
                 f.each_line do |l|
                     parts = l.split
+                    if parts.length != 2
+                        next
+                    end
                     @contents << Content.new(Integer(parts[0]),parts[1])
                 end
             else
@@ -67,6 +70,7 @@ module ManifestMerge
     def fetch_from(otherman, otherrev, newrev, revmap)
         newdata = ManifestData.new
         newdata.revnum = newrev
+        newdata.uuid = otherman.data(otherrev).uuid
         revmap[otherrev] = newrev
         rls = otherman.name_revlog_map(otherrev)
         otherman.data(otherrev).contents.each do |c|
@@ -93,7 +97,6 @@ module ManifestMerge
     end
 
     def newuuid
-        #SecureRandom.hex
         ManifestMerge::newuuid
     end
 
@@ -107,12 +110,48 @@ module ManifestMerge
         current_data.revnum
     end
 
+    def merge(revision, newrevision) #might need dag; could be cleaner with passed lambda or something; 
+        #TODO: finish
+        #TODO: make sure not called on ancestors
+        curdata = current_data
+        mergedata = data(revision)
+        newdata = ManifestData.new
+        newdata.revnum = newrevision
+        #resolve conflicts, and copy non-conflicting members of curdata
+        curdata.contents.each do |cc|
+            found = false
+            mergedata.contents.each do |mc|
+                if cc.fname == mc.fname && cc.revnum != mc.revnum
+                    #TODO: resolve conflict
+                    #if ancestry linear: use newer
+                    #else: merge3 using LCA
+                    #either way, use new revision number
+                    found = true
+                end
+            end
+            if not found
+                newdata.add_content(cc.revnum, cc.fname)
+            end
+        end
+
+        #copy unique members of mergedata
+        mergedata.contents.each do |mc|
+            if curdata.contents.find {|cc| cc.fname == mc.fname} == nil
+                newdata.add_content(mc.revnum, mc.fname)
+            end
+        end
+
+        #TODO: complete, check for conflicts
+        add_revision(newdata)
+        checkout(newrevision)
+    end
+
     def checkout(revision)
         @manlog.checkout(revision)
         #TODO: make this more intelligent. for now, nukes everything and then restores
 
         #nuke everything
-        Dir.entries(@basedir).reject {|e| e.start_with?('.')}.each do |fname|
+        Dir.entries(@basedir).reject {|e| e == '.' || e == '..' || e.start_with?(HIDDEN_DIR)}.each do |fname|
             File.delete(File.join(@basedir, fname))
         end
         
@@ -126,9 +165,6 @@ module ManifestMerge
 
     def commit(basedir, filelist, newrevision)
         curdata = current_data
-        #File.open(@full_fpath, 'r') do |f|
-        #    curdata = ManifestData.new(f)
-        #end
         newdata = ManifestData.new
         newdata.revnum = newrevision
         filelist.each do |fname|
