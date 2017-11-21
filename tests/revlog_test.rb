@@ -29,7 +29,8 @@ class RevlogTest < Minitest::Test
         end
     end
 
-    def after_all
+    #def after_all
+    def teardown
         Dir.chdir(@@start_dir)
         if File.exist?('.test')
             FileUtils.rm_rf('.test')
@@ -47,7 +48,7 @@ class RevlogTest < Minitest::Test
         #open(@@test_file, 'w') do |f|
             #f.puts "123"
         #end
-        super
+        #super
     end
 
     def test_first_revlog_data
@@ -141,6 +142,53 @@ class BenchRevlog < Minitest::Benchmark
     @@test_file = 'dumb.txt'
     @@upper = 50
 
+
+
+#=====
+    @@start_dir = Dir.pwd
+
+    def setup
+        # placeholder in case we want to setup test env    
+        Dir.chdir(@@start_dir)
+        if File.exist?('.test')
+            FileUtils.rm_rf('.test')
+        end
+        if File.exist?('.repository')
+            FileUtils.rm_rf('.repository')
+        end
+        Dir.mkdir('.test')
+        Dir.chdir('.test')
+
+        File.open(@@test_file, 'w') do |f|
+            f.puts "123"
+        end
+    end
+
+    #def after_all
+    def teardown
+        Dir.chdir(@@start_dir)
+        if File.exist?('.test')
+            FileUtils.rm_rf('.test')
+        end
+        if File.exist?('.repository')
+            FileUtils.rm_rf('.repository')
+        end
+        # clean file system after each tests
+        #delete_arr = ['index', 'data']
+        #delete_arr.each do |dir|
+        #    rm(Dir.glob(File.join(@@default_path, dir, '*')))
+        #end
+
+        # restore dump.txt
+        #open(@@test_file, 'w') do |f|
+        #f.puts "123"
+        #end
+        #super
+    end
+
+
+#====
+=begin
     def after_all
         # clean file system after each tests
         delete_arr = ['index', 'data']
@@ -153,6 +201,7 @@ class BenchRevlog < Minitest::Benchmark
             f.puts "123"
         end
     end
+=end
 
     def bench_content
         r = Revlog.new @@test_file

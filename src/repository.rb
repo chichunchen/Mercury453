@@ -98,8 +98,6 @@ module Repository
       return
     end
     
-    # check if revision_str is valid?
-    revision_int = revision_str.to_i()
     
     manifest = Manifest.new()
     manifest.checkout(Integer(revision_str))
@@ -121,7 +119,7 @@ module Repository
     files = Dir.entries(".repository/.stage/").reject {|e| e == '.' || e == '..'}.to_a
     if files.size == 0
       $logger.warn('WARNING: no files staged to commit, commit ignored')
-      return
+      return false
     end
     cur_rev_int = Repository.cur_rev()
     new_rev_int = dag.nextrevision()
@@ -220,27 +218,41 @@ module Repository
     myrevs = mydag.each_revision(myman).to_a
     revmap = {}
     other_cur = nil
+    identical = true
+    path_str = File.absolute_path(path_str, Dir.pwd)
+    #debug = nil
     Dir.chdir(path_str) do
         man = Manifest.new(path_str)
         other_cur = man.current_revision
         thisdag = dag(path_str)
-        $logger.debug("thisdag: #{thisdag}")
+        #debug = thisdag.each_revision(man).to_a
+        $logger.debug("thisdag: #{thisdag}, for #{path_str}")
         thisdag.each_revision(man) do |revision|
-            if myrevs.map {|r| r.uuid}.include?(revision.uuid)
-                revmap[revision.revnum] = revision.revnum
+            #if myrevs.map {|r| r.uuid}.include?(revision.uuid)
+            match = myrevs.find {|r| r.uuid == revision.uuid}
+            if not match.nil?
+                revmap[revision.revnum] = match.revnum
+                #revmap[revision.revnum] = revision.revnum
                 next
             else
+                identical = false
                 newrev = mydag.nextrevision
                 myman.fetch_from(man,revision.revnum,newrev,revmap)
                 mydag.merge_revision_under(newrev, thisdag.parents(revision.revnum).map {|r| revmap[r]})
             end
         end
     end
-    target_rev = revmap[other_cur]
-    #TODO: do the merging
-    #call down to manifest
-    myman.merge(target_rev, dag.nextrevision)
-    #TODO: cleanup?
+    if identical
+        $logger.warn("The provided repository is fully contained within this one; there is nothing to fetch.")
+        #raise "Identical repos; local had #{myrevs}, remote had #{debug}"
+    else
+        target_rev = revmap[other_cur]
+        #TODO: do the merging
+        #call down to manifest
+        $logger.debug("About to merge; mydag: #{mydag}")
+        myman.merge(target_rev, mydag.nextrevision)
+        #TODO: cleanup?
+    end
     
   end
 

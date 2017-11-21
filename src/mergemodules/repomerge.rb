@@ -46,6 +46,9 @@ class RevisionDAG < Hash
 
 
     def []=(key,val)
+        if key.nil?
+            raise "Cannot have nil revision number!"
+        end
         ret = super(key,val)
         save
         ret
@@ -100,7 +103,9 @@ class RevisionDAG < Hash
         #TODO: DO THE FILES
         #Manifest.new.add_revision(newdata)
         parents.each do |p|
-            self[p] << newrevnum    
+            self[p] ||= []
+            self[p] << newrevnum
+            #self[p] << newrevnum    
         end
         save
     end

@@ -15,6 +15,9 @@ module ManifestMerge
                 @contents = []
                 f.each_line do |l|
                     parts = l.split
+                    if parts.length != 2
+                        next
+                    end
                     @contents << Content.new(Integer(parts[0]),parts[1])
                 end
             else
@@ -67,6 +70,7 @@ module ManifestMerge
     def fetch_from(otherman, otherrev, newrev, revmap)
         newdata = ManifestData.new
         newdata.revnum = newrev
+        newdata.uuid = otherman.data(otherrev).uuid
         revmap[otherrev] = newrev
         rls = otherman.name_revlog_map(otherrev)
         otherman.data(otherrev).contents.each do |c|
@@ -147,7 +151,7 @@ module ManifestMerge
         #TODO: make this more intelligent. for now, nukes everything and then restores
 
         #nuke everything
-        Dir.entries(@basedir).reject {|e| e.start_with?('.')}.each do |fname|
+        Dir.entries(@basedir).reject {|e| e == '.' || e == '..' || e.start_with?(HIDDEN_DIR)}.each do |fname|
             File.delete(File.join(@basedir, fname))
         end
         
