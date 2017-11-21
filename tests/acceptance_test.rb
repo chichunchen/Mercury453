@@ -42,7 +42,63 @@ class TestAcceptance < Minitest::Test
     
     result = `'../../hg' create`
     assert_equal(result, "NEW REPOSITORY CREATED\n")    
+
+    result = `'../../hg' history`
+    assert_equal(result, "Revision #0; Parent(s): []\n")
+
+    result = `'../../hg' status`
+    assert_equal(result,     
+      "REPOSITORY STATUS\n" +
+      "Repository No: 0\n\n" +
+      "...Files staged:\n" +
+      "...Files changed from .staged version:\n\n" +
+      "...Files changed from current revision:\n")
     
+    `touch file1.txt`
+    result = `'../../hg' add file1.txt`
+    result = `'../../hg' status`
+    assert_equal(result, 
+      "REPOSITORY STATUS\n" +
+      "Repository No: 0\n\n" +
+      "...Files staged:\n" +
+      "file1.txt\n\n" +
+      "...Files changed from .staged version:\n\n" +
+      "...Files changed from current revision:\n")
+
+    result = `'../../hg' delete file1.txt`
+    result = `'../../hg' status`
+    assert_equal(result,     
+      "REPOSITORY STATUS\n" +
+      "Repository No: 0\n\n" +
+      "...Files staged:\n" +
+      "...Files changed from .staged version:\n\n" +
+      "...Files changed from current revision:\n")
+
+    result = `'../../hg' add file1.txt`
+    result = `'../../hg' status`
+    assert_equal(result, 
+      "REPOSITORY STATUS\n" +
+      "Repository No: 0\n\n" +
+      "...Files staged:\n" +
+      "file1.txt\n\n" +
+      "...Files changed from .staged version:\n\n" +
+      "...Files changed from current revision:\n")
+
+    result = `'../../hg' commit`
+    result = `'../../hg' status`
+    assert_equal(result, 
+      "REPOSITORY STATUS\n" +
+      "Repository No: 1\n\n" +
+      "...Files staged:\n" +
+      "...Files changed from .staged version:\n\n" +
+      "...Files changed from current revision:\n")
+
+    result = `'../../hg' history`
+    assert_equal(result, 
+      "Revision #0; Parent(s): []\n" +
+      "Revision #1; Parent(s): [0]\n")
+
+   
     
   end
 
