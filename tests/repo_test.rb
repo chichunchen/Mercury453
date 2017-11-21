@@ -110,11 +110,27 @@ class TestRepository < Minitest::Test
   end
 
   def test_merge
-    Repository.create()
-    FileUtils.touch('.test_file1')
-    a = ['.test_file1']
-    Repository.add(a)      
-    Repository.commit()
+    Dir.mkdir('repo1')
+    Dir.chdir('repo1') do
+        Repository.create()
+        FileUtils.touch('file1')
+        a = ['file1']
+        Repository.add(a)      
+        Repository.commit()
+    end
+    Dir.mkdir('repo2')
+    Dir.chdir('repo2') do
+        Repository.create()
+        FileUtils.touch('file1')
+        FileUtils.touch('file2')
+        a = ['file1', 'file2']
+        Repository.add(a)      
+        Repository.commit()
+        Repository.merge('../repo1')
+        Repository.checkout(2)
+        assert(!File.exist?('file2'), "Checkout should remove not-present files")
+
+    end
 
 #    FileUtils.chdir('..')
 #    FileUtils.mkdir('.test2')
