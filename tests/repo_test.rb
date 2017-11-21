@@ -16,6 +16,9 @@ class TestRepository < Minitest::Test
     if File.exist?('.test')
         FileUtils.rm_rf('.test')
     end
+    if File.exist?('.repository')
+        FileUtils.rm_rf('.repository')
+    end
     Dir.mkdir('.test')
     Dir.chdir('.test')
   end
@@ -24,6 +27,9 @@ class TestRepository < Minitest::Test
     Dir.chdir(@@start_dir)
     if File.exist?('.test')
         FileUtils.rm_rf('.test')
+    end
+    if File.exist?('.repository')
+        FileUtils.rm_rf('.repository')
     end
     super
   end
@@ -129,8 +135,9 @@ class TestRepository < Minitest::Test
         Repository.merge('../repo1')
         Repository.checkout(2)
         assert(!File.exist?('file2'), "Checkout should remove not-present files")
-
     end
+    FileUtils.rm_rf('repo1')
+    FileUtils.rm_rf('repo2')
 
 #    FileUtils.chdir('..')
 #    FileUtils.mkdir('.test2')
