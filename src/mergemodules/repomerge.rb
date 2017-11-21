@@ -197,5 +197,24 @@ module RepoMerge
             d.init(val)
         end
 
+        def with_logger(l, &block)
+            backup = $logger
+            formatter = backup.formatter
+            $logger = l
+            $logger.formatter = formatter
+            ret = block.call
+            $logger = backup
+            ret
+        end
+
+        def collect_output(level=Logger::INFO, &block)
+            s = ""
+            st = StringIO.new(s, 'w')
+            l = Logger.new(st)
+            l.level = level
+            ret = with_logger(l, &block)
+            return s, ret
+        end
+
     end
 end
