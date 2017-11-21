@@ -101,9 +101,9 @@ class TestAcceptance < Minitest::Test
 
   #----------------------------------------------------------------------
   def test_2
-    # Simple test of create, status, add, delete, commit, and history.
+    # Test that the system gracefully provides error message when commands 
+    # attempted in a directory that is not a repository
     
-
     result = `'../../hg' status`
     assert_equal(result,     
       "WARNING: no local repository exists...use create\n" +
@@ -120,6 +120,21 @@ class TestAcceptance < Minitest::Test
       "WARNING: add ignored\n")    
   end
 
+  #----------------------------------------------------------------------
+  def test_3
+    # Test that the system gracefully provides error message when attempting a 
+    # commit when there are no staged changes
+    
+    result = `'../../hg' commit`
+    assert_equal(result,     
+      "WARNING: no local repository exists...use create\n" +
+      "WARNING: commit ignored\n")
+
+    `../../hg create`
+    result = `'../../hg' commit`
+    assert_equal(result,     
+      "WARNING: no files staged to commit, commit ignored\n") 
+  end
 end
 
 
