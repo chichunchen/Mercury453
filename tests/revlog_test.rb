@@ -18,6 +18,9 @@ class RevlogTest < Minitest::Test
         if File.exist?('.test')
             FileUtils.rm_rf('.test')
         end
+        if File.exist?('.repository')
+            FileUtils.rm_rf('.repository')
+        end
         Dir.mkdir('.test')
         Dir.chdir('.test')
 
@@ -30,6 +33,9 @@ class RevlogTest < Minitest::Test
         Dir.chdir(@@start_dir)
         if File.exist?('.test')
             FileUtils.rm_rf('.test')
+        end
+        if File.exist?('.repository')
+            FileUtils.rm_rf('.repository')
         end
         # clean file system after each tests
         #delete_arr = ['index', 'data']

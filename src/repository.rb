@@ -94,7 +94,6 @@ module Repository
     # Exception: if this revision number is not valid, fail; 
     #            if .staged not empty, fail
     
-    puts('Repository.checkout not implemented')
     
     # Check if there are staged files, if so, don't allow checkout.
     files = Dir[".repository/.stage/*"]
@@ -107,11 +106,9 @@ module Repository
     # check if revision_str is valid?
     revision_int = revision_str.to_i()
     
-    #manifest = Manifest.new()
-    #manifest.checkout()
+    manifest = Manifest.new()
+    manifest.checkout(Integer(revision_str))
 
-    # if checkout successful, update .current_revision.txt
-    Repository.set_cur_rev(revision_int)   
   end
 
   #--------------------------------------------------------------------
@@ -149,11 +146,9 @@ module Repository
     #}
 
     
-    Repository.set_cur_rev(new_rev_int)    
-    
-
     dag.add_revision(new_rev_int, cur_rev_int)
     FileUtils.rm_rf('.repository/.stage/.') 
+    return new_rev_int
   end
 
   #--------------------------------------------------------------------
@@ -338,7 +333,7 @@ if __FILE__ == $0
     when 'checkout'
       Repository.checkout(ARGV[1])
     when 'commit'
-      Repository.commit()
+      p "Committed revision #{Repository.commit()}"
     when 'add'
       Repository.add(ARGV[1..ARGV.length])
     when 'delete'
