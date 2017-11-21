@@ -37,7 +37,7 @@ class TestAcceptance < Minitest::Test
   end
   
   #----------------------------------------------------------------------
-  def test_a
+  def test_1
     # Simple test of create, status, add, delete, commit, and history.
     
     result = `'../../hg' create`
@@ -97,9 +97,27 @@ class TestAcceptance < Minitest::Test
     assert_equal(result, 
       "Revision #0; Parent(s): []\n" +
       "Revision #1; Parent(s): [0]\n")
+  end
 
-   
+  #----------------------------------------------------------------------
+  def test_2
+    # Simple test of create, status, add, delete, commit, and history.
     
+
+    result = `'../../hg' status`
+    assert_equal(result,     
+      "WARNING: no local repository exists...use create\n" +
+      "WARNING: status ignored\n")
+    
+    result = `'../../hg' history`
+    assert_equal(result,     
+      "WARNING: no local repository exists...use create\n" +
+      "WARNING: history ignored\n")
+    
+    result = `'../../hg' add`
+    assert_equal(result,     
+      "WARNING: no local repository exists...use create\n" +
+      "WARNING: add ignored\n")    
   end
 
 end
