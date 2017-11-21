@@ -41,8 +41,8 @@ class TestAcceptance < Minitest::Test
     # Simple test of create, status, add, delete, commit, and history.
     
     result = `'../../hg' create`
-    puts result
     assert_equal(result, "NEW REPOSITORY CREATED\n")    
+    
     
   end
 

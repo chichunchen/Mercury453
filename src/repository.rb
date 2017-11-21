@@ -82,6 +82,11 @@ module Repository
     # Exception: if this revision number is not valid, fail; 
     #            if .staged not empty, fail
     
+    if !File.exist?('.repository')
+      $logger.warn('WARNING: no local repository exists...use create')
+      $logger.warn('WARNING: checkout ignored')
+      return false
+    end
     
     # Check if there are staged files, if so, don't allow checkout.
     files = Dir[".repository/.stage/*"]
@@ -107,6 +112,12 @@ module Repository
     #                 passed as arguments, stage and commit them
     # Exception:      if one or more files are staged and one or more arguments 
     #                 are provided, fail
+
+    if !File.exist?('.repository')
+      $logger.warn('WARNING: no local repository exists...use create')
+      $logger.warn('WARNING: commit ignored')
+      return false
+    end
 
     files = Dir.entries(".repository/.stage/").reject {|e| e == '.' || 
                                                            e == '..'}.to_a
@@ -145,6 +156,12 @@ module Repository
     #                 exist will be staged
 
     if !File.exist?('.repository')
+      $logger.warn('WARNING: no local repository exists...use create')
+      $logger.warn('WARNING: add ignored')
+      return false
+    end
+    
+    if !File.exist?('.repository')
       $logger.warn('\nNOT IN A REPOSITORY...add ignored\n')
       return
     end
@@ -180,7 +197,13 @@ module Repository
     # Exception:      if the file is not staged, fail
     # ***NOTE***:     this command does not remove a file from a repository, it
     #                 only removes the file from staging for the next commit
-    
+
+    if !File.exist?('.repository')
+      $logger.warn('WARNING: no local repository exists...use create')
+      $logger.warn('WARNING: delete ignored')
+      return false
+    end
+
     files_list.each do |e|
       if !File.exist?('.repository/.stage/' + e)
         $logger.warn('\nWARNING: ' + e + ' is not currently staged\n')
@@ -204,6 +227,12 @@ module Repository
     #                 repository is determined to be identical to the current 
     #                 repository, fail
     #TODO: error checking
+
+    if !File.exist?('.repository')
+      $logger.warn('WARNING: no local repository exists...use create')
+      $logger.warn('WARNING: merge ignored')
+      return false
+    end
 
     mydag = dag
     myman = Manifest.new
@@ -262,12 +291,10 @@ module Repository
     #	  display all edited but unstaged files
     # Exception: if current directory is not a repository, fail 
 
-    staged_files = []
-    staged_edited = []
-    
     if !File.exist?('.repository')
-      $logger.warn('NOT IN A REPOSITORY...use create')
-      return
+      $logger.warn('WARNING: no local repository exists...use create')
+      $logger.warn('WARNING: status ignored')
+      return false
     end
 
     if !File.exist?('.repository/.stage')
@@ -316,6 +343,12 @@ module Repository
     # Main procedure: display a list of each commit, its parent(s), revision
     # number, and commit message
     # Exception: if current directory is not a repository, fail
+
+    if !File.exist?('.repository')
+      $logger.warn('WARNING: no local repository exists...use create')
+      $logger.warn('WARNING: history ignored')
+      return false
+    end
 
     puts dag.history
     #text = File.read('.repository/commit_history.txt')
