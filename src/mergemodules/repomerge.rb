@@ -44,7 +44,6 @@ class RevisionDAG < Hash
         self
     end
 
-
     def []=(key,val)
         if key.nil?
             raise "Cannot have nil revision number!"
@@ -83,6 +82,53 @@ class RevisionDAG < Hash
             end
         end
         max + 1
+    end
+
+    def lowest(a,b)
+        a_parents = [a]
+        a_parents.each do |n|
+            if n == b
+                return a
+            end
+            a_parents += parents(n)
+        end
+        b_parents = [b]
+        b_parents.each do |n|
+            if n == a
+                return b
+            end
+            b_parents += parents(n)
+        end
+        nil
+    end
+
+    def LCA(a,b)
+        if a == b
+            parents(n1).first
+        else
+            a_parents = [a]
+            a_parents.each do |n|
+                if n == b
+                    return nil,lowest(a,b) #linear
+                end
+                parents(n).each do |p|
+                    a_parents << p
+                end
+            end
+            b_parents = [b]
+            b_parents.each do |n|
+                if n == a
+                    return nil,lowest(a,b) #linear
+                elsif a_parents.include?(n)
+                    return n,nil
+                end
+                parents(n).each do |p|
+                    b_parents << p
+                end
+            end
+
+            raise "Couldn't find root of dag! Arguments were #{a} and #{b} for dag #{self}"
+        end
     end
 
     def parents(node)

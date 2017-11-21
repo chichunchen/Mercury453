@@ -250,7 +250,7 @@ module Repository
         #TODO: do the merging
         #call down to manifest
         $logger.debug("About to merge; mydag: #{mydag}")
-        myman.merge(target_rev, mydag.nextrevision)
+        myman.merge(target_rev, mydag.nextrevision, mydag)
         #TODO: cleanup?
     end
     
