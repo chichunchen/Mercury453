@@ -59,7 +59,7 @@ class Manifest
     #def commit(filelist, newrevision, path='.repository/.stage')
     #end
 
-    def checkout(revision)
+    #def checkout(revision)
 =begin
         manilist = @manifest
 
@@ -103,7 +103,7 @@ class Manifest
             #I plan to change the puts sentence into a File.open function in the future
         end
 =end
-    end
+    #end
  
     
     def files_changed(revision_int)

@@ -107,6 +107,23 @@ module ManifestMerge
         current_data.revnum
     end
 
+    def checkout(revision)
+        @manlog.checkout(revision)
+        #TODO: make this more intelligent. for now, nukes everything and then restores
+
+        #nuke everything
+        Dir.entries(@basedir).reject {|e| e.start_with?('.')}.each do |fname|
+            File.delete(File.join(@basedir, fname))
+        end
+        
+        #restore
+        curdata = current_data
+        rls = name_revlog_map(revision)
+        curdata.contents.each do |c|
+            rls[c.fname].checkout(c.revnum)
+        end
+    end
+
     def commit(basedir, filelist, newrevision)
         curdata = current_data
         #File.open(@full_fpath, 'r') do |f|

@@ -20,6 +20,21 @@ end
 FIRST_REV ||= 0
 
 #============================================================================
+# FILESYSTEM STATE STRUCTURE USED BY Repository
+#
+# all state data will be stored in the directory .repository. Repository will 
+# have a subdirectory .stage and the files .commit_history and 
+# current_revision.txt 
+#
+# Here
+# is an example directory/file stucture
+# 
+# .repository/            # all repository state information is stored here
+#   .commit_history.txt   # holds raw history of commits (for error check)
+#   .current_revision.txt # hold the current revision int; starts at -1
+#   .stage/               # this holds a cp of files that were added with .add()
+#
+#============================================================================
 module Repository
   #============================================================================
 
@@ -28,19 +43,29 @@ module Repository
 
   # External methods
   #--------------------------------------------------------------------
+  def Repository.cur_rev()
+    # Returns current revision
+    text = File.read('.repository/.current_revision.txt')
+    return text.to_i()
+  end
+ 
   def Repository.create()
-    # Description: initialize current directory as a new repository
-    # Precondition: current directory is not part of a repository
-    # Postcondition: current directory part of a new, empty repository
+    # Description:    initialize current directory as a new repository
+    # Precondition:   current directory is not part of a repository
+    # Postcondition:  current directory part of a new, empty repository
     # Main procedure: determine if the current directory is already a 
     #                 repository;if not, create a new repository here
-    # Exception: if the current directory is part of an existing repository, 
-    #            fail	
+    # Exception:      if the current directory is part of an existing 
+    #                 repository, fail	
+    # return val:     true if repository was created, false in not 
 
-    puts '...Repository.create'
+    $logger.debug('...Repository.create')
     if File.exist?('.repository')
-      puts 'repository already exists...create ignored'
+      # TODO: consider if exception is better than warning
+      $logger.info('WARNING: repository already exists...create ignored')
+      return false
     else
+      # create filesystem structures
       Dir.mkdir('.repository')
       Dir.mkdir('.repository/.stage')
       #File.open('.repository/commit_history.txt', 'w') do |f| 
@@ -50,21 +75,40 @@ module Repository
       #    f.write(FIRST_REV.to_s) 
       #end
       Manifest.new.create
+      $logger.info('NEW REPOSITORY CREATED')
+      return true
     end    
+
   end
 
   #--------------------------------------------------------------------
   def Repository.checkout(revision_str) 
-    # Description: restores the repository directory to how it was at the 
-    #              given revision
-    # Precondition: the revision number is valid
-    # Postcondition: the directory contents reflect how they were at the given
-    #                revision	
+    # Description:    restores the repository directory to how it was at the 
+    #                 given revision
+    # Precondition:   the revision number is valid
+    # Postcondition:  the directory contents reflect how they were at the given
+    #                 revision	
     # Main procedure: restore the manifest to the given revision (via 
     #                 Manifest/Revlog), then use Manifest to restore directory
     #                 contents
-    # Exception: if this revision number is not valid, fail
-    puts('Repository.checkout not implemented')
+    # Exception: if this revision number is not valid, fail; 
+    #            if .staged not empty, fail
+    
+    
+    # Check if there are staged files, if so, don't allow checkout.
+    files = Dir[".repository/.stage/*"]
+    if files.size != 0
+      $logger.warn('WARNING: checkout not allowed when files are staged.')
+      $logger.warn('WARNING: either commit or delete staged files first.')
+      return
+    end
+    
+    # check if revision_str is valid?
+    revision_int = revision_str.to_i()
+    
+    manifest = Manifest.new()
+    manifest.checkout(Integer(revision_str))
+
   end
 
   #--------------------------------------------------------------------
@@ -100,13 +144,11 @@ module Repository
     #open('.repository/commit_history.txt', 'a') { |f|
     #   f.puts("\n" + new_rev_int.to_s)
     #}
-    
-    
-    
 
+    
     dag.add_revision(new_rev_int, cur_rev_int)
-    #Dag.add_rev()
     FileUtils.rm_rf('.repository/.stage/.') 
+    return new_rev_int
   end
 
   #--------------------------------------------------------------------
@@ -221,6 +263,8 @@ module Repository
 
     print("\nREPOSITORY STATUS:\n")
 
+    puts("Repository No: " + Repository.cur_rev.to_s + "\n")
+
     # print files that are staged
     puts("...Files staged:")
     Dir[".repository/.stage/*"].each {|f| puts File.basename(f)}    
@@ -280,8 +324,8 @@ end
 
 # check if repository is called from commandline, if so execute command
 if __FILE__ == $0
-  puts('Repository called from main')
-  puts ARGV
+  $logger.info('repository.rb called from main')
+
   if ARGV[0]
     case ARGV[0]
     when 'create'
@@ -289,7 +333,7 @@ if __FILE__ == $0
     when 'checkout'
       Repository.checkout(ARGV[1])
     when 'commit'
-      Repository.commit()
+      p "Committed revision #{Repository.commit()}"
     when 'add'
       Repository.add(ARGV[1..ARGV.length])
     when 'delete'
@@ -305,6 +349,6 @@ if __FILE__ == $0
     end
   end
 else
-  puts("Repository module loaded")
+  $logger.debug("Repository module loaded")
 end
 
