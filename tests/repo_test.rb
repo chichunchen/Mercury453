@@ -8,21 +8,25 @@ require "minitest/autorun"
 #=============================================================================
 class TestRepository < Minitest::Test 
 
-  @@start_dir = Dir.pwd
+  @@start_dir = Dir.pwd  # save the starting dir to restore later
 
+  #----------------------------------------------------------------------
   def setup
-    # placeholder in case we want to setup test env    
+    # wipe and recreate .test directory 
     Dir.chdir(@@start_dir)
     if File.exist?('.test')
         FileUtils.rm_rf('.test')
     end
+    
+    # NOTE: I don't think we want to kill .repository in pwd from running test
     if File.exist?('.repository')
-        FileUtils.rm_rf('.repository')
+       FileUtils.rm_rf('.repository')
     end
     Dir.mkdir('.test')
     Dir.chdir('.test')
   end
 
+  #----------------------------------------------------------------------
   def after_all
     Dir.chdir(@@start_dir)
     if File.exist?('.test')
@@ -34,7 +38,6 @@ class TestRepository < Minitest::Test
     super
   end
   
-
   #----------------------------------------------------------------------
   def test_create
     Repository.create()
@@ -55,6 +58,19 @@ class TestRepository < Minitest::Test
     Repository.create()
     File.open('file1.txt', 'w') { |f| f.write("test text") }
     Repository.status()
+  end
+
+  #----------------------------------------------------------------------
+  def test_status3
+    # adds a file and checks if in status
+    Repository.create()
+    FileUtils.touch('file1.txt')
+    Repository.add(['file1.txt'])          
+    FileUtils.touch('file2.txt')
+    Repository.status()
+    
+    # add check that status shows file1.txt staged and file2.txt unstaged
+    
   end
 
   #----------------------------------------------------------------------

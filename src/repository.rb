@@ -36,14 +36,12 @@ FIRST_REV ||= 0
 #
 #============================================================================
 module Repository
-  #============================================================================
-
-  include RepoMerge
   # This is the Repository module for top level dvcs functionality.
 
-  # External methods
-  #--------------------------------------------------------------------
+  include RepoMerge
+
  
+  #--------------------------------------------------------------------
   def Repository.create()
     # Description:    initialize current directory as a new repository
     # Precondition:   current directory is not part of a repository
@@ -190,8 +188,6 @@ module Repository
     # Exception:      if the file is not staged, fail
     # ***NOTE***:     this command does not remove a file from a repository, it
     #                 only removes the file from staging for the next commit
-
-    puts('Repository.delete not tested')
     
     files_list.each do |e|
       if !File.exist?('.repository/.stage/' + e)
@@ -205,16 +201,18 @@ module Repository
 
   #--------------------------------------------------------------------
   def Repository.merge(path_str)
-    # Description: merge with the repository located at path.
-    # Precondition: path contains a valid repository
-    # Postcondition: contents and history of branch present path exist in this
+    # Description:    merge with the repository located at path.
+    # Precondition:   path contains a valid repository
+    # Postcondition:  contents and history of branch present path exist in this
     # repository
     # Main procedure: merge the two repositories first by merging their DAGs,
-    # and then finding the lowest common ancestor for each file; each file is
-    # merged (see Analysis document)
-    # Exception: if path does not contain a repository, or if the repository 
-    # is determined to be identical to the current repository, fail
+    #                 and then finding the lowest common ancestor for each file;
+    #                 each file is merged (see Analysis document)
+    # Exception:      if path does not contain a repository, or if the 
+    #                 repository is determined to be identical to the current 
+    #                 repository, fail
     #TODO: error checking
+
     mydag = dag
     myman = Manifest.new
     myrevs = mydag.each_revision(myman).to_a
@@ -246,6 +244,9 @@ module Repository
     #	  display all edited but unstaged files
     # Exception: if current directory is not a repository, fail 
 
+    staged_files = []
+    staged_edited = []
+    
     if !File.exist?('.repository')
       puts('\nNOT IN A REPOSITORY...use create\n')
       return
@@ -262,7 +263,8 @@ module Repository
 
     # print files that are staged
     puts("...Files staged:")
-    Dir[".repository/.stage/*"].each {|f| puts File.basename(f)}    
+    staged_files = Dir[".repository/.stage/*"].map {|f| puts File.basename(f)}    
+    puts staged_files
     
     # print staged files that have changed
     puts("...Files changed from .staged version:\n")
@@ -287,7 +289,6 @@ module Repository
     # TODO
   end
 
-
   #--------------------------------------------------------------------
   def Repository.history()
     # Description: display commit history
@@ -309,10 +310,6 @@ module Repository
     #return text.to_i()
     Manifest.new.current_revision
   end
-  
-  #--------------------------------------------------------------------
-  
-  protected
   
 end
 #============================================================================
