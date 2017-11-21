@@ -9,8 +9,8 @@ require 'securerandom'
 
 $logger = Logger.new(STDOUT)
 #$logger.level = Logger::ERROR
-$logger.level = Logger::WARN
-#$logger.level = Logger::INFO
+#$logger.level = Logger::WARN
+$logger.level = Logger::INFO     # lets use this for stdout
 #$logger.level = Logger::DEBUG
 
 $logger.formatter = proc do |severity, datetime, progname, msg|
@@ -55,18 +55,13 @@ module Repository
     $logger.debug('...Repository.create')
     if File.exist?('.repository')
       # TODO: consider if exception is better than warning
-      $logger.info('WARNING: repository already exists...create ignored')
+      $logger.warn('WARNING: repository already exists...create ignored')
       return false
     else
       # create filesystem structures
       Dir.mkdir('.repository')
       Dir.mkdir('.repository/.stage')
-      #File.open('.repository/commit_history.txt', 'w') do |f| 
-      #  f.write("FROM \t\t\t\tTO\n") 
-      #end
-      #File.open('.repository/current_revision.txt', 'w') do |f| 
-      #    f.write(FIRST_REV.to_s) 
-      #end
+
       Manifest.new.create
       $logger.info('NEW REPOSITORY CREATED')
       return true
@@ -113,8 +108,8 @@ module Repository
     # Exception:      if one or more files are staged and one or more arguments 
     #                 are provided, fail
 
-    #files = Dir[".repository/.stage/*"]
-    files = Dir.entries(".repository/.stage/").reject {|e| e == '.' || e == '..'}.to_a
+    files = Dir.entries(".repository/.stage/").reject {|e| e == '.' || 
+                                                           e == '..'}.to_a
     if files.size == 0
       $logger.warn('WARNING: no files staged to commit, commit ignored')
       return false
@@ -127,7 +122,6 @@ module Repository
 
     $logger.info('cur_rev_int: ' + cur_rev_int.to_s)
     $logger.info('new_rev_int: ' + new_rev_int.to_s)
-    #$logger.info('new_rev_hash: ' + new_rev_hash)
     
     #$logger.debug(files)
     manifest = Manifest.new('.')
@@ -136,7 +130,6 @@ module Repository
     #   f.puts("\n" + new_rev_int.to_s)
     #}
 
-    
     dag.add_revision(new_rev_int, cur_rev_int)
     FileUtils.rm_rf('.repository/.stage/.') 
     return new_rev_int
@@ -152,28 +145,29 @@ module Repository
     #                 exist will be staged
 
     if !File.exist?('.repository')
-      puts('\nNOT IN A REPOSITORY...add ignored\n')
+      $logger.warn('\nNOT IN A REPOSITORY...add ignored\n')
       return
     end
     
     if files_list.nil?
-      puts('\nWARNING: add called without any files.\n')
+      $logger.warn('\nWARNING: add called without any files.\n')
       return
     end
 
     files_list.each do |e|
       if !File.exist?(e)
-        puts('\nWARNING: ' + e + ' is not a file\n')
+        $logger.warn('\nWARNING: ' + e + ' is not a file\n')
         next
       end
       
       # check if file is already staged
       if File.exist?('.repository/.stage/' + e)
-        puts('\nINFO: updating staged file: ' + e)  
+        $logger.info('\nINFO: updating staged file: ' + e)  
         FileUtils.rm('.repository/.stage/' + e)
       end
       
       FileUtils.cp(e, '.repository/.stage/' + e)      
+      $logger.info('added ' + e + ' to staging area')
     end
   end
 
@@ -189,7 +183,7 @@ module Repository
     
     files_list.each do |e|
       if !File.exist?('.repository/.stage/' + e)
-        puts('\nWARNING: ' + e + ' is not currently staged\n')
+        $logger.warn('\nWARNING: ' + e + ' is not currently staged\n')
         next
       else
         FileUtils.rm('.repository/.stage/' + e)        
@@ -272,39 +266,40 @@ module Repository
     staged_edited = []
     
     if !File.exist?('.repository')
-      puts('\nNOT IN A REPOSITORY...use create\n')
+      $logger.warn('NOT IN A REPOSITORY...use create')
       return
     end
 
     if !File.exist?('.repository/.stage')
-      puts('\nREPOSITORY CORRUPT, .repository/.stage missing\n')
+      $logger.error('ERROR: REPOSITORY CORRUPT, .repository/.stage missing')
       return
     end
 
-    print("\nREPOSITORY STATUS:\n")
+    $logger.info("REPOSITORY STATUS")
 
-    puts("Repository No: " + Repository.cur_rev.to_s + "\n")
+    $logger.info("Repository No: " + Repository.cur_rev.to_s + "\n")
 
     # print files that are staged
-    puts("...Files staged:")
-    staged_files = Dir[".repository/.stage/*"].map {|f| puts File.basename(f)}    
-    puts staged_files
+    $logger.info("...Files staged:")
+    staged_files = Dir[".repository/.stage/*"]    
+    filenames = staged_files.map {|f| puts File.basename(f)}    
+    filenames.each {|f| $logger.info(f)}
     
     # print staged files that have changed
-    puts("...Files changed from .staged version:\n")
-    Dir[".repository/.stage/*"].each do |f|
+    $logger.info("...Files changed from .staged version:")
+    staged_files.each do |f|
       f_orig = File.basename(f)
       if !File.exist?(f_orig) or !FileUtils.identical?(f,f_orig)
-        puts f_orig
+        $logger.info(f_orig)
       end
     end
 
     # print files changed but not staged
-    puts("...Files changed from current revision:\n")
+    $logger.info("\n...Files changed from current revision:")
     mani = Manifest.new('.')
     files_changed = mani.files_changed(Repository.cur_rev())
     if !files_changed.nil? 
-      files_changed.each {|f| puts f}
+      files_changed.each {|f| $logger.info(f)}
     end
     mani = nil
     
