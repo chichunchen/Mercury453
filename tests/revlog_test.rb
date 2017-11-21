@@ -10,18 +10,38 @@ class RevlogTest < Minitest::Test
 
     @@test_file = 'dumb.txt'
     @@default_path = '.repository/'
-
-    def after_all
-        # clean file system after each tests
-        delete_arr = ['index', 'data']
-        delete_arr.each do |dir|
-            rm(Dir.glob(File.join(@@default_path, dir, '*')))
+    @@start_dir = Dir.pwd
+    
+    def setup
+        # placeholder in case we want to setup test env    
+        Dir.chdir(@@start_dir)
+        if File.exist?('.test')
+            FileUtils.rm_rf('.test')
         end
+        Dir.mkdir('.test')
+        Dir.chdir('.test')
 
-        # restore dump.txt
-        open(@@test_file, 'w') do |f|
+        File.open(@@test_file, 'w') do |f|
             f.puts "123"
         end
+    end
+
+    def after_all
+        Dir.chdir(@@start_dir)
+        if File.exist?('.test')
+            FileUtils.rm_rf('.test')
+        end
+        # clean file system after each tests
+        #delete_arr = ['index', 'data']
+        #delete_arr.each do |dir|
+        #    rm(Dir.glob(File.join(@@default_path, dir, '*')))
+        #end
+
+        # restore dump.txt
+        #open(@@test_file, 'w') do |f|
+            #f.puts "123"
+        #end
+        super
     end
 
     def test_first_revlog_data

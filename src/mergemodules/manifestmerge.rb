@@ -97,11 +97,21 @@ module ManifestMerge
         ManifestMerge::newuuid
     end
 
-    def commit(basedir, filelist, newrevision)
-        curdata = nil
+    def current_data
         File.open(@full_fpath, 'r') do |f|
-            curdata = ManifestData.new(f)
+            ManifestData.new(f)
         end
+    end
+
+    def current_revision
+        current_data.revnum
+    end
+
+    def commit(basedir, filelist, newrevision)
+        curdata = current_data
+        #File.open(@full_fpath, 'r') do |f|
+        #    curdata = ManifestData.new(f)
+        #end
         newdata = ManifestData.new
         newdata.revnum = newrevision
         filelist.each do |fname|

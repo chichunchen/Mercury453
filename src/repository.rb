@@ -8,10 +8,10 @@ require 'logger'
 require 'securerandom'
 
 $logger = Logger.new(STDOUT)
-#logger.level = Logger::ERROR
-#logger.level = Logger::WARN
-#logger.level = Logger::INFO
-$logger.level = Logger::DEBUG
+#$logger.level = Logger::ERROR
+$logger.level = Logger::WARN
+#$logger.level = Logger::INFO
+#$logger.level = Logger::DEBUG
 
 $logger.formatter = proc do |severity, datetime, progname, msg|
    "#{msg}\n"
@@ -46,9 +46,9 @@ module Repository
       #File.open('.repository/commit_history.txt', 'w') do |f| 
       #  f.write("FROM \t\t\t\tTO\n") 
       #end
-      File.open('.repository/current_revision.txt', 'w') do |f| 
-          f.write(FIRST_REV.to_s) 
-      end
+      #File.open('.repository/current_revision.txt', 'w') do |f| 
+      #    f.write(FIRST_REV.to_s) 
+      #end
       Manifest.new.create
     end    
   end
@@ -177,7 +177,6 @@ module Repository
     # merged (see Analysis document)
     # Exception: if path does not contain a repository, or if the repository 
     # is determined to be identical to the current repository, fail
-    puts('Repository.merge not implemented')
     #TODO: error checking
     mydag = dag
     myman = Manifest.new
@@ -190,23 +189,8 @@ module Repository
                 revmap[revision.revnum] = revision.revnum
                 next
             else
-                #this is a new revision
-                #change the data and commit it
-                    #topological order means only new revision number is this one (make nextrevision)
-                    #with every new one, modify some record that maps revision renumberings
-                    #map revnum and each content's revnum (if not mapped, identity)
-                #TODO: handle the files
-                #something in Manifest to copy from other? needs to ignore Dir.pwd
                 newrev = mydag.nextrevision
                 myman.fetch_from(man,revision.revnum,newrev,revmap)
-                #newrev = Manifest::ManifestData.new
-                #newrev.revnum = mydag.nextrevision
-                #revmap[revision.revnum] = newrev.revnum
-                #revmap[revision.revnum] = newrev
-                #revision.contents.each do |c|
-                #    newrev.add_content(revmap[c.revnum],c.fname)
-                #end
-                #newrev should be ready to be merge_committed
                 mydag.merge_revision_under(newrev, dag.parents(revision.revnum).map {|r| revmap[r]})
             end
         end
@@ -282,8 +266,9 @@ module Repository
   #--------------------------------------------------------------------
   def Repository.cur_rev()
     # Returns current revision
-    text = File.read('.repository/current_revision.txt')
-    return text.to_i()
+    #text = File.read('.repository/current_revision.txt')
+    #return text.to_i()
+    Manifest.new.current_revision
   end
   
   #--------------------------------------------------------------------

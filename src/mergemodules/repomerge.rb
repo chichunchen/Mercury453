@@ -19,7 +19,7 @@ class RevisionDAG < Hash
         }
     }
 
-    def self.loadproc (base=nil)
+    def self.loadproc(base=nil)
         @@loadproc.call(base)
     end
 
