@@ -193,11 +193,11 @@ class TestRepository < Minitest::Test
     Dir.mkdir('repo2')
     Dir.chdir('repo2') do
         Repository.create()
-        #File.open('g.txt','w') do |f|
-        #    f.write("a")
-        #end
-        #Repository.add(['g.txt'])
-        #Repository.commit()
+        File.open('g.txt','w') do |f|
+            f.write("a")
+        end
+        Repository.add(['g.txt'])
+        Repository.commit()
         Repository.merge('../repo1')
     end
     FileUtils.rm_rf('repo1')
