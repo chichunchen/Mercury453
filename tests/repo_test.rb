@@ -115,7 +115,7 @@ class TestRepository < Minitest::Test
     Repository.checkout(1)
   end
 
-  def test_merge
+  def test_fetch
     Dir.mkdir('repo1')
     Dir.chdir('repo1') do
         Repository.create()
@@ -138,14 +138,30 @@ class TestRepository < Minitest::Test
     end
     FileUtils.rm_rf('repo1')
     FileUtils.rm_rf('repo2')
+  end
 
-#    FileUtils.chdir('..')
-#    FileUtils.mkdir('.test2')
-#    Dir.glob('.test/*') {|f| FileUtils.cp File.expand_path(f), '.test2/' }
-#    FileUtils.chdir('.test')
-#    Repository.merge()
-
-    #FileUtils.rm_rf('.test2')
+  def test_merge
+    Dir.mkdir('repo1')
+    Dir.chdir('repo1') do
+        Repository.create()
+        FileUtils.touch('file1')
+        a = ['file1']
+        Repository.add(a)      
+        Repository.commit()
+    end
+    Dir.mkdir('repo2')
+    Dir.chdir('repo2') do
+        Repository.create()
+        FileUtils.touch('file2')
+        a = ['file2']
+        Repository.add(a)      
+        Repository.commit()
+        Repository.merge('../repo1')
+        assert(File.exist?('file1') && File.exist?('file2'), "Merge should incorporate all non-conflicting files")
+    end
+    FileUtils.rm_rf('repo1')
+    FileUtils.rm_rf('repo2')
+   
   end
 
   # Repository doesn't have version yet

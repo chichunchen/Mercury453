@@ -9,9 +9,9 @@ require 'securerandom'
 
 $logger = Logger.new(STDOUT)
 #$logger.level = Logger::ERROR
-#$logger.level = Logger::WARN
+$logger.level = Logger::WARN
 #$logger.level = Logger::INFO
-$logger.level = Logger::DEBUG
+#$logger.level = Logger::DEBUG
 
 $logger.formatter = proc do |severity, datetime, progname, msg|
    "#{msg}\n"
@@ -219,19 +219,28 @@ module Repository
     myman = Manifest.new
     myrevs = mydag.each_revision(myman).to_a
     revmap = {}
+    other_cur = nil
     Dir.chdir(path_str) do
-        man = Manifest.new
-        dag.each_revision(man) do |revision|
+        man = Manifest.new(path_str)
+        other_cur = man.current_revision
+        thisdag = dag(path_str)
+        $logger.debug("thisdag: #{thisdag}")
+        thisdag.each_revision(man) do |revision|
             if myrevs.map {|r| r.uuid}.include?(revision.uuid)
                 revmap[revision.revnum] = revision.revnum
                 next
             else
                 newrev = mydag.nextrevision
                 myman.fetch_from(man,revision.revnum,newrev,revmap)
-                mydag.merge_revision_under(newrev, dag.parents(revision.revnum).map {|r| revmap[r]})
+                mydag.merge_revision_under(newrev, thisdag.parents(revision.revnum).map {|r| revmap[r]})
             end
         end
     end
+    target_rev = revmap[other_cur]
+    #TODO: do the merging
+    #call down to manifest
+    myman.merge(target_rev, dag.nextrevision)
+    #TODO: cleanup?
     
   end
 
@@ -334,7 +343,7 @@ if __FILE__ == $0
     when 'delete'
       Repository.delete(ARGV[1..ARGV.length])
     when 'merge'
-      Repository.merge()
+      Repository.merge(ARGV[1])
     when 'status'
       Repository.status()
     when 'history'

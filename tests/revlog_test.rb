@@ -157,7 +157,7 @@ class BenchRevlog < Minitest::Benchmark
     def bench_content
         r = Revlog.new @@test_file
         r.create
-        (0..@@upper).each { |e| r.commit e }
+        (1..@@upper).each { |e| r.commit e }
         assert_performance_linear 0.0001 do |n|
             r.content n if n < @@upper
         end
@@ -174,7 +174,7 @@ class BenchRevlog < Minitest::Benchmark
     def bench_checkout
         r = Revlog.new @@test_file
         r.create
-        (0..@@upper).each { |e| r.commit e }
+        (1..@@upper).each { |e| r.commit e }
         assert_performance_linear 0.001 do |n|
             r.checkout n if n < @@upper
         end

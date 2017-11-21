@@ -102,6 +102,7 @@ class RevisionDAG < Hash
         parents.each do |p|
             self[p] << newrevnum    
         end
+        save
     end
 
     def history
@@ -126,22 +127,21 @@ module RepoMerge
     module RepoClassMethods
         DAG_LOC = ".repository/revisions.marshal"
         DEFAULT_DAG = {FIRST_REV => []}
-        def dag
+        def dag(base=nil)
+            base ||= Dir.pwd
+            loc = File.join(base, DAG_LOC)
             #return @dag if @dag
             begin
-                File.open(DAG_LOC, "r") do |f|
+                File.open(loc, "r") do |f|
                     #@dag = Marshal::load(f, RevisionDAG.loadproc(nil))
                     Marshal::load(f, RevisionDAG.loadproc(nil))
                 end
             rescue Errno::ENOENT
-                d = File.dirname(DAG_LOC)
+                d = File.dirname(loc)
                 unless File.directory?(d)
                     FileUtils.mkdir_p(d)
                 end
-                #@dag = RevisionDAG.new(DAG_LOC)
-                #@dag.init(DEFAULT_DAG)
-                #@dag
-                d = RevisionDAG.new(DAG_LOC)
+                d = RevisionDAG.new(loc)
                 d.init(DEFAULT_DAG)
                 d
             end

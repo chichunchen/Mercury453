@@ -93,7 +93,6 @@ module ManifestMerge
     end
 
     def newuuid
-        #SecureRandom.hex
         ManifestMerge::newuuid
     end
 
@@ -105,6 +104,42 @@ module ManifestMerge
 
     def current_revision
         current_data.revnum
+    end
+
+    def merge(revision, newrevision) #might need dag; could be cleaner with passed lambda or something; 
+        #TODO: finish
+        #TODO: make sure not called on ancestors
+        curdata = current_data
+        mergedata = data(revision)
+        newdata = ManifestData.new
+        newdata.revnum = newrevision
+        #resolve conflicts, and copy non-conflicting members of curdata
+        curdata.contents.each do |cc|
+            found = false
+            mergedata.contents.each do |mc|
+                if cc.fname == mc.fname && cc.revnum != mc.revnum
+                    #TODO: resolve conflict
+                    #if ancestry linear: use newer
+                    #else: merge3 using LCA
+                    #either way, use new revision number
+                    found = true
+                end
+            end
+            if not found
+                newdata.add_content(cc.revnum, cc.fname)
+            end
+        end
+
+        #copy unique members of mergedata
+        mergedata.contents.each do |mc|
+            if curdata.contents.find {|cc| cc.fname == mc.fname} == nil
+                newdata.add_content(mc.revnum, mc.fname)
+            end
+        end
+
+        #TODO: complete, check for conflicts
+        add_revision(newdata)
+        checkout(newrevision)
     end
 
     def checkout(revision)
@@ -126,9 +161,6 @@ module ManifestMerge
 
     def commit(basedir, filelist, newrevision)
         curdata = current_data
-        #File.open(@full_fpath, 'r') do |f|
-        #    curdata = ManifestData.new(f)
-        #end
         newdata = ManifestData.new
         newdata.revnum = newrevision
         filelist.each do |fname|
