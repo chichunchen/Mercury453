@@ -135,6 +135,97 @@ class TestAcceptance < Minitest::Test
     assert_equal(result,     
       "WARNING: no files staged to commit, commit ignored\n") 
   end
+  
+  #----------------------------------------------------------------------
+  def test_4
+    # Test that the system gracefully provides error message when attempting to
+    # add a file that doesn't exist
+  end  
+  
+  #----------------------------------------------------------------------
+  def test_5
+    # Stress test, a 1000 iteration loop of adding and committing changes to 
+    # a single file 
+  end  
+  
+  #----------------------------------------------------------------------
+  def test_6
+    # Test checkout by committing two changes, then restoring to the first
+    # version
+    
+  end  
+  
+  #----------------------------------------------------------------------
+  def test_7
+    # Tests merge. First commits first revision and second revision. Makes 
+    # changes from first revision and then merges in as a third revision.
+  end  
+  
+  #----------------------------------------------------------------------
+  def test_8
+    # Tests that the version command works.
+
+    version_str = "Version: 0.1\n" + "License:
+The MIT License (MIT)
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the \"Software\"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+"
+    result = `'../../hg' -v`
+    assert_equal(result, version_str)
+    result = `'../../hg' version`
+    assert_equal(result, version_str) 
+    
+  end  
+  
+  #----------------------------------------------------------------------
+  def test_9
+    # Tests that the help command works.
+    
+    help_str =  "
+   #####                                          #
+  #     #  #####    ####   #    #  #####          #    #
+  #        #    #  #    #  #    #  #    #         #    #
+  #  ####  #    #  #    #  #    #  #    #         #######
+  #     #  #####   #    #  #    #  #####               #
+  #     #  #   #   #    #  #    #  #                   #
+   #####   #    #   ####    ####   #                   #
+" + "
+
+Open-source Distributed Control System
+
+Authors:
+  *  Chi-Chun Chen
+  *  Yuening Liu
+  *  Parker Riley
+  *  Taylan Sen
+
+Usage: ./hg <command>
+Commands:
+  create                Create a new repository in the current directory
+  checkout <version>    Revert to the specified revision
+  add <files>           Add the specified files to the next commit
+  delete <files>        Delete the specified files from the next commit
+  commit <files>        Commit the specified files or all outstanding changes
+  status                Display files changed but not committed
+  history               Display commit history
+  merge <path>          Merge with the repository located at <path>
+  help, -h              Display this information
+  version, -v           Output version and copyright information
+"
+    
+    result = `'../../hg' help`
+    assert_equal(result, help_str) 
+
+    result = `'../../hg' -h`
+    assert_equal(result, help_str) 
+
+  end  
+  
+  
 end
 
 
