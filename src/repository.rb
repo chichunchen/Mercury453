@@ -119,8 +119,7 @@ module Repository
       return false
     end
 
-    files = Dir.entries(".repository/.stage/").reject {|e| e == '.' || 
-                                                           e == '..'}.to_a
+    files = Dir.entries(".repository/.stage/").reject {|e| File.directory?(e)}.to_a
     if files.size == 0
       $logger.warn('WARNING: no files staged to commit, commit ignored')
       return false

@@ -68,7 +68,7 @@ if (cmd)
     Repository.history()
   
   elsif cmd == "merge"
-    puts "command not supported"
+    Repository.merge(args[0])
   
   elsif cmd == "version" || cmd == "-v"
       puts "Version: 0.1"

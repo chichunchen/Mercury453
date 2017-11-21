@@ -202,7 +202,7 @@ module ManifestMerge
         #TODO: make this more intelligent. for now, nukes everything and then restores
 
         #nuke everything
-        Dir.entries(@basedir).reject {|e| e == '.' || e == '..' || e.start_with?(HIDDEN_DIR)}.each do |fname|
+        Dir.entries(@basedir).reject {|e| File.directory?(e)}.each do |fname|
             File.delete(File.join(@basedir, fname))
         end
         
