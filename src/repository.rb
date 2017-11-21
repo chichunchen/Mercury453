@@ -130,8 +130,8 @@ module Repository
     # note, new_rev_hash will likely be moved to manifest
     #new_rev_hash = SecureRandom.hex
 
-    $logger.info('cur_rev_int: ' + cur_rev_int.to_s)
-    $logger.info('new_rev_int: ' + new_rev_int.to_s)
+    $logger.debug('cur_rev_int: ' + cur_rev_int.to_s)
+    $logger.debug('new_rev_int: ' + new_rev_int.to_s)
     
     #$logger.debug(files)
     manifest = Manifest.new('.')
@@ -245,14 +245,11 @@ module Repository
         man = Manifest.new(path_str)
         other_cur = man.current_revision
         thisdag = dag(path_str)
-        #debug = thisdag.each_revision(man).to_a
         $logger.debug("thisdag: #{thisdag}, for #{path_str}")
         thisdag.each_revision(man) do |revision|
-            #if myrevs.map {|r| r.uuid}.include?(revision.uuid)
             match = myrevs.find {|r| r.uuid == revision.uuid}
             if not match.nil?
                 revmap[revision.revnum] = match.revnum
-                #revmap[revision.revnum] = revision.revnum
                 next
             else
                 identical = false
@@ -264,17 +261,13 @@ module Repository
     end
     if identical
         $logger.warn("The provided repository is fully contained within this one; there is nothing to fetch.")
-        #raise "Identical repos; local had #{myrevs}, remote had #{debug}"
     else
         target_rev = revmap[other_cur]
-        #TODO: do the merging
-        #call down to manifest
         $logger.debug("About to merge; mydag: #{mydag}")
         conflicts = myman.merge(target_rev, mydag.nextrevision, mydag)
         conflicts.each do |fname|
-            $logger.error("Merge conflict in #{fname}")
+            $logger.warn("Merge conflict in #{fname}")
         end
-        #TODO: cleanup?
     end
     
   end
@@ -308,8 +301,8 @@ module Repository
     # print files that are staged
     $logger.info("...Files staged:")
     staged_files = Dir[".repository/.stage/*"]    
-    filenames = staged_files.map {|f| puts File.basename(f)}    
-    filenames.each {|f| $logger.info(f)}
+    filenames = staged_files.map {|f|  $logger.info(File.basename(f))}    
+    #filenames.each {|f| $logger.info(f)}
     
     # print staged files that have changed
     $logger.info("...Files changed from .staged version:")
@@ -327,7 +320,6 @@ module Repository
     if !files_changed.nil? 
       files_changed.each {|f| $logger.info(f)}
     end
-    mani = nil
     
     # print files not tracked
     #puts("...Files not tracked:\n")
@@ -349,7 +341,7 @@ module Repository
       return false
     end
 
-    puts dag.history
+    $logger.info(dag.history)
     #text = File.read('.repository/commit_history.txt')
     #puts(text)
   end
@@ -376,7 +368,7 @@ if __FILE__ == $0
     when 'checkout'
       Repository.checkout(ARGV[1])
     when 'commit'
-      p "Committed revision #{Repository.commit()}"
+      $logger.info("Committed revision #{Repository.commit()}")
     when 'add'
       Repository.add(ARGV[1..ARGV.length])
     when 'delete'

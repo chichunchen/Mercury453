@@ -145,13 +145,9 @@ class RevisionDAG < Hash
     end
 
     def merge_revision_under(newrevnum, parents)#, manifest)
-        #Manifest.new(@base).add_revision(newdata)
-        #TODO: DO THE FILES
-        #Manifest.new.add_revision(newdata)
         parents.each do |p|
             self[p] ||= []
             self[p] << newrevnum
-            #self[p] << newrevnum    
         end
         save
     end
@@ -163,7 +159,7 @@ class RevisionDAG < Hash
             ps = parents(k)
             s += "Revision ##{id}; Parent(s): #{ps}\n"
         end
-
+        s.rstrip!
         s
     end
 
@@ -181,10 +177,8 @@ module RepoMerge
         def dag(base=nil)
             base ||= Dir.pwd
             loc = File.join(base, DAG_LOC)
-            #return @dag if @dag
             begin
                 File.open(loc, "r") do |f|
-                    #@dag = Marshal::load(f, RevisionDAG.loadproc(nil))
                     Marshal::load(f, RevisionDAG.loadproc(nil))
                 end
             rescue Errno::ENOENT
@@ -201,26 +195,7 @@ module RepoMerge
         def dag=(val)
             d = dag
             d.init(val)
-            #@dag = d
         end
 
     end
 end
-
-
-=begin
-
-module Repo
-    include RepoMerge
-end
-
-#p Repo.dag.nextrevision
-Repo.dag[0] = [1,2]
-Repo.dag[1] = [2]
-#p Repo.dag.parents(2)
-puts Repo.dag.history
-#p Repo.nextrevision
-#p Repo.dag
-#Repo.dag[2] = []
-#p Repo.dag
-=end

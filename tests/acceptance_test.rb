@@ -61,7 +61,7 @@ class TestAcceptance < Minitest::Test
       "REPOSITORY STATUS\n" +
       "Repository No: 0\n\n" +
       "...Files staged:\n" +
-      "file1.txt\n\n" +
+      "file1.txt\n" +
       "...Files changed from .staged version:\n\n" +
       "...Files changed from current revision:\n")
 
@@ -80,7 +80,7 @@ class TestAcceptance < Minitest::Test
       "REPOSITORY STATUS\n" +
       "Repository No: 0\n\n" +
       "...Files staged:\n" +
-      "file1.txt\n\n" +
+      "file1.txt\n" +
       "...Files changed from .staged version:\n\n" +
       "...Files changed from current revision:\n")
 
