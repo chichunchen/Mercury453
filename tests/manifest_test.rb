@@ -83,7 +83,8 @@ class ManifestTest < Minitest::Test
     	m.create()
     	t3 = m.current_data
     	puts t3
-    	#assert_equal [0,-1], t3
+        parts = [t3.revnum, t3.uuid, t3.contents]
+    	assert_equal [0,'-1', []], parts
     end
 
 
