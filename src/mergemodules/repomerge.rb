@@ -6,19 +6,20 @@ FIRST_REV ||= 0
 class RevisionDAG < Hash
     include TSort
 
-    attr_accessor :f
+    attr_accessor :f, :base
 
     @@loadproc = Proc.new { |base|
         base = base || Dir.pwd
         Proc.new { |bh|
             if bh.class == RevisionDAG
                 bh.f = File.absolute_path(bh.f, base)
+                bh.base = base
             end
             bh
         }
     }
 
-    def self.loadproc (base=nil)
+    def self.loadproc(base=nil)
         @@loadproc.call(base)
     end
 
@@ -31,6 +32,7 @@ class RevisionDAG < Hash
     def initialize(path)
         #@f = File.absolute_path(path, Dir.pwd)
         @f = path
+        @base = Dir.pwd
     end
 
     def init(h)
@@ -42,23 +44,27 @@ class RevisionDAG < Hash
         self
     end
 
+
     def []=(key,val)
         ret = super(key,val)
-        val.each do |e|
-            self[e] ||= []
-        end
         save
         ret
     end
 
     def save
+        self.each_key.to_a.each do |k|
+            self[k].each do |e|
+                self[e] ||= []
+            end
+        end
+
         File.open(@f, "w") do |f|
             f.write(Marshal::dump(self))
         end
     end
 
     def each_revision(man, &block)
-        dag.tsort.map {|revnum| man.data(revnum)}.each(&block)
+        self.tsort.reverse.map {|revnum| man.data(revnum)}.each(&block)
     end
 
     def nextrevision
@@ -86,13 +92,15 @@ class RevisionDAG < Hash
 
     def add_revision(newrevid, parentrevid)
         self[parentrevid] << newrevid
+        save
     end
 
-    def merge_revision_under(newdata, parents)#, manifest)
-        #manifest.add_revision(newdata)
-        Manifest.new.add_revision(newdata)
+    def merge_revision_under(newrevnum, parents)#, manifest)
+        #Manifest.new(@base).add_revision(newdata)
+        #TODO: DO THE FILES
+        #Manifest.new.add_revision(newdata)
         parents.each do |p|
-            self[p] << newdata.revnum    
+            self[p] << newrevnum    
         end
     end
 
@@ -119,26 +127,30 @@ module RepoMerge
         DAG_LOC = ".repository/revisions.marshal"
         DEFAULT_DAG = {FIRST_REV => []}
         def dag
-            return @dag if @dag
+            #return @dag if @dag
             begin
                 File.open(DAG_LOC, "r") do |f|
-                    @dag = Marshal::load(f, RevisionDAG.loadproc(nil))
+                    #@dag = Marshal::load(f, RevisionDAG.loadproc(nil))
+                    Marshal::load(f, RevisionDAG.loadproc(nil))
                 end
             rescue Errno::ENOENT
                 d = File.dirname(DAG_LOC)
                 unless File.directory?(d)
                     FileUtils.mkdir_p(d)
                 end
-                @dag = RevisionDAG.new(DAG_LOC)
-                @dag.init(DEFAULT_DAG)
-                @dag
+                #@dag = RevisionDAG.new(DAG_LOC)
+                #@dag.init(DEFAULT_DAG)
+                #@dag
+                d = RevisionDAG.new(DAG_LOC)
+                d.init(DEFAULT_DAG)
+                d
             end
         end
 
         def dag=(val)
             d = dag
             d.init(val)
-            @dag = d
+            #@dag = d
         end
 
     end

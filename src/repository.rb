@@ -8,34 +8,20 @@ require 'logger'
 require 'securerandom'
 
 $logger = Logger.new(STDOUT)
-#logger.level = Logger::ERROR
-#logger.level = Logger::WARN
-#logger.level = Logger::INFO
-$logger.level = Logger::DEBUG
+#$logger.level = Logger::ERROR
+$logger.level = Logger::WARN
+#$logger.level = Logger::INFO
+#$logger.level = Logger::DEBUG
 
 $logger.formatter = proc do |severity, datetime, progname, msg|
    "#{msg}\n"
 end
   
+FIRST_REV ||= 0
+
 #============================================================================
 module Repository
   #============================================================================
-  # temporary placeholder for Dag functionality, i.e. delete when Dag ready
-  module Dag
-    
-    def Dag.next_rev_int()
-      return rand(50)
-    end
-    
-    def Dag.add_rev(parent_revs, new_rev_int)
-      puts '...calling Dag.add_rev'
-    end
-  
-    def Dag.history()
-      puts '...calling Dag.history'
-    end
-    
-  end
 
   include RepoMerge
   # This is the Repository module for top level dvcs functionality.
@@ -57,12 +43,13 @@ module Repository
     else
       Dir.mkdir('.repository')
       Dir.mkdir('.repository/.stage')
-      File.open('.repository/commit_history.txt', 'w') do |f| 
-        f.write("FROM \t\t\t\tTO\n") 
-      end
-      File.open('.repository/current_revision.txt', 'w') do |f| 
-        f.write(-1) 
-      end
+      #File.open('.repository/commit_history.txt', 'w') do |f| 
+      #  f.write("FROM \t\t\t\tTO\n") 
+      #end
+      #File.open('.repository/current_revision.txt', 'w') do |f| 
+      #    f.write(FIRST_REV.to_s) 
+      #end
+      Manifest.new.create
     end    
   end
 
@@ -91,31 +78,33 @@ module Repository
     # Exception:      if one or more files are staged and one or more arguments 
     #                 are provided, fail
 
-    files = Dir[".repository/.stage/*"]
+    #files = Dir[".repository/.stage/*"]
+    files = Dir.entries(".repository/.stage/").reject {|e| e == '.' || e == '..'}.to_a
     if files.size == 0
       $logger.warn('WARNING: no files staged to commit, commit ignored')
       return
     end
     cur_rev_int = Repository.cur_rev()
-    new_rev_int = Dag.next_rev_int()
+    new_rev_int = dag.nextrevision()
     
     # note, new_rev_hash will likely be moved to manifest
-    new_rev_hash = SecureRandom.hex
+    #new_rev_hash = SecureRandom.hex
 
-    $logger.info('cur_rev_int: ' + new_rev_int.to_s)
-    $logger.info('new_rev_hash: ' + new_rev_hash)
-    $logger.info('new_rev_hash: ' + new_rev_hash)
+    $logger.info('cur_rev_int: ' + cur_rev_int.to_s)
+    $logger.info('new_rev_int: ' + new_rev_int.to_s)
+    #$logger.info('new_rev_hash: ' + new_rev_hash)
     
-    #logger.debug(files)
+    #$logger.debug(files)
     manifest = Manifest.new('.')
-    manifest.commit(files, new_rev_int)
-    open('.repository/commit_history.txt', 'a') { |f|
-       f.puts("\n" + new_rev_int.to_s)
-    }
+    manifest.commit('.repository/.stage/', files, new_rev_int)
+    #open('.repository/commit_history.txt', 'a') { |f|
+    #   f.puts("\n" + new_rev_int.to_s)
+    #}
     
     
     
 
+    dag.add_revision(new_rev_int, cur_rev_int)
     #Dag.add_rev()
     FileUtils.rm_rf('.repository/.stage/.') 
   end
@@ -188,11 +177,10 @@ module Repository
     # merged (see Analysis document)
     # Exception: if path does not contain a repository, or if the repository 
     # is determined to be identical to the current repository, fail
-    puts('Repository.merge not implemented')
     #TODO: error checking
     mydag = dag
     myman = Manifest.new
-    myrevs = mydag.each_revision.to_a
+    myrevs = mydag.each_revision(myman).to_a
     revmap = {}
     Dir.chdir(path_str) do
         man = Manifest.new
@@ -201,31 +189,11 @@ module Repository
                 revmap[revision.revnum] = revision.revnum
                 next
             else
-                #this is a new revision
-                #change the data and commit it
-                    #topological order means only new revision number is this one (make nextrevision)
-                    #with every new one, modify some record that maps revision renumberings
-                    #map revnum and each content's revnum (if not mapped, identity)
-                newrev = Manifest::ManifestData.new
-                newrev.revnum = mydag.nextrevision
-                revmap[revision.revnum] = newrev.revnum
-                revision.contents.each do |c|
-                    newrev.add_content(revmap[c.revnum],c.fname)
-                end
-                #newrev should be ready to be merge_committed
-                #all content revnums should be defined
-                #who's the parent? : _dag.parents(revnum)
-                #somedag.add_revision_under(newrevisiondata, parents, manifest)
-                    #manifest.add_revision(newrevisiondata), + bookkeeping
-                    #or, somemanifest.add_revision_under(newrevisiondata, parents) NOT IDEAL, PARENTS UN-NEEDED
-                mydag.merge_revision_under(newrev, dag.parents(revision.revnum).map {|r| revmap[r]}, myman)
+                newrev = mydag.nextrevision
+                myman.fetch_from(man,revision.revnum,newrev,revmap)
+                mydag.merge_revision_under(newrev, dag.parents(revision.revnum).map {|r| revmap[r]})
             end
         end
-        #enumerate revisions in tsorted order (with uuids)
-            #if matches something in me, skip it
-            #else, get all files changed in that revision (revision = that revision #)
-            #for each file, commit those contents as new revision
-            #this is true for the manifest too! (possible content changes)
     end
     
   end
@@ -298,8 +266,9 @@ module Repository
   #--------------------------------------------------------------------
   def Repository.cur_rev()
     # Returns current revision
-    text = File.read('.repository/current_revision.txt')
-    return text.to_i()
+    #text = File.read('.repository/current_revision.txt')
+    #return text.to_i()
+    Manifest.new.current_revision
   end
   
   #--------------------------------------------------------------------

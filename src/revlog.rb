@@ -12,17 +12,32 @@ class Revlog
     include Zlib
 
     # initialize a new revlog for a given file
-    def initialize(fname, datafile=nil, indexfile=nil)
-        @fname = File.absolute_path(fname, Dir.pwd)
-        @indexfile = indexfile || (File.join HIDDEN_DIR, "index", fname)
-        @datafile = datafile || (File.join HIDDEN_DIR, "data", fname)
+    def initialize(fname, basedir=nil, datafile=nil, indexfile=nil)
+        base = basedir || Dir.pwd
+        @fname = File.absolute_path(fname, base)
+        if @fname == fname
+            raise "CONSTRUCTED WITH ABSOLUTE PATH #{fname}"
+        end
+        indexdir = File.join base, HIDDEN_DIR, "index"
+        datadir = File.join base, HIDDEN_DIR, "data"
+        @indexfile = indexfile || (File.join indexdir, fname)
+        @datafile = datafile || (File.join datadir, fname)
+        [indexdir, datadir].each do |d|
+            unless File.directory?(d)
+                FileUtils.mkdir_p(d)
+            end
+        end
     end
 
     #NOTE: create() instead of new(); new() is the constructor
     # add a revision
-    def create(revision=0)
+    def create(revision=0, content_io=nil)
         # initialize datafile with compressed file @fname
-        compress_file_lines = Deflate.deflate(File.read(@fname))
+        if content_io.nil?
+            compress_file_lines = Deflate.deflate(File.read(@fname))
+        else
+            compress_file_lines = Deflate.deflate(content_io.read)
+        end
         File.open(@datafile, "w") do |f|
             f.puts compress_file_lines
         end
@@ -36,8 +51,7 @@ class Revlog
 
     # return the content of a given revision
     def content(revision)
-        line = revision+1
-        parse = parse_indexfile_line get_indexfile_with_line(line)
+        parse = parse_indexfile_line get_indexfile_with_revision(revision)
         offset = parse[1]
         length = parse[2]
         str = ""
@@ -66,7 +80,8 @@ class Revlog
         if content_io.nil?
             compress_file_lines = Deflate.deflate(File.read(@fname))
         else
-            compress_file_lines = Deflate.deflate(content_io.read)
+            cont = content_io.read
+            compress_file_lines = Deflate.deflate(cont)
         end
 
         # append current file fname to datafile
@@ -101,7 +116,22 @@ class Revlog
             IO.readlines(filename).size.to_s
         end
 
-        # return a line with given line number
+        # return a row with given revision number
+        def get_indexfile_with_revision revision
+            result = nil
+            File.open(@indexfile, "r") do |f|
+                f.each_line do |line|
+                    row = parse_indexfile_line(line)
+                    if row[0] == revision
+                        result = line
+                        break
+                    end
+                end
+            end
+            return result if result
+        end
+
+        # return a row with given line number
         def get_indexfile_with_line number
             IO.readlines(@indexfile)[number]
         end

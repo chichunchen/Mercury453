@@ -39,7 +39,7 @@ class Manifest
                 end
             end
         end
-        @manlog = Revlog.new(@full_fpath, data_path, index_path) #revlog representing this manifest file
+        @manlog = Revlog.new(MANIFEST_REL_PATH, @basedir, data_path, index_path) #revlog representing this manifest file
     end
 
     def create()
@@ -56,65 +56,11 @@ class Manifest
 
     end
 
-    def commit(filelist, newrevision, path='.repository/.stage')
-
-        #create a filelist and write the new revision number inside the filelist
-        flist = File.new(filelist,'w')
-        flist.puts newrevision
-        flist.close
-
-        #put the lines from the filelist into an array named arr1
-        arr1 = IO.readlines(flist)
-
-        manilist = @manifest
-
-        #put all the lines from the manifest in to an array named arr
-        arr = IO.readlines('manifest')
-        i = 0
-        pairs = {}
-
-
-        #stores each line from the manifest into a hash, the keys are the revision number(former 4 digits), and other characters are values
-        while i < arr.length
-            h1 = arr[i][0,4]
-            h2 = arr[i][4,arr[i].length]
-            h = {h1 => h2}
-            pairs = pairs.merge h
-            i = i + 1
-        end
-
-        pairskey = pairs.keys
-
-        k = 0
-        flag = 0
-
-        #compares the keys with the line written in the filelist(compare if the revision number is already in the manilist)
-        while k < pairskey.length
-            #puts pairskey[k]
-            if pairskey[k] == arr1[0][0,4]
-                puts "The same as new revision!!!"
-                flag = 1
-                #puts flag
-                break
-            else
-                flag = 0
-                #puts flag
-            end
-            k = k + 1
-        end
-
-        #if the revision number is not in the manifest, write it in the manifest
-        if flag == 0
-            manilist.puts newrevision
-            manilist.close
-        end
-
-
-
-    end
+    #def commit(filelist, newrevision, path='.repository/.stage')
+    #end
 
     def checkout(revision)
-
+=begin
         manilist = @manifest
 
         arr = IO.readlines('manifest')
@@ -156,7 +102,7 @@ class Manifest
             puts pairsname[k]
             #I plan to change the puts sentence into a File.open function in the future
         end
-
+=end
     end
  
     
@@ -171,9 +117,4 @@ class Manifest
     
 
 end
-
-#a = Manifest.new
-#a.create()
-#a.commit('filelist1',"8888")
-#a.checkout("3333")
 
