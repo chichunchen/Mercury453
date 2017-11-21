@@ -142,6 +142,7 @@ module Repository
 
     dag.add_revision(new_rev_int, cur_rev_int)
     FileUtils.rm_rf('.repository/.stage/.') 
+    $logger.info("Committed revision #{new_rev_int}")
     return new_rev_int
   end
 
@@ -359,7 +360,7 @@ end
 
 # check if repository is called from commandline, if so execute command
 if __FILE__ == $0
-  $logger.info('repository.rb called from main')
+  $logger.debug('repository.rb called from main')
 
   if ARGV[0]
     case ARGV[0]
@@ -368,7 +369,7 @@ if __FILE__ == $0
     when 'checkout'
       Repository.checkout(ARGV[1])
     when 'commit'
-      $logger.info("Committed revision #{Repository.commit()}")
+      Repository.commit()
     when 'add'
       Repository.add(ARGV[1..ARGV.length])
     when 'delete'
