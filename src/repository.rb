@@ -9,9 +9,9 @@ require 'securerandom'
 
 $logger = Logger.new(STDOUT)
 #$logger.level = Logger::ERROR
-$logger.level = Logger::WARN
+#$logger.level = Logger::WARN
 #$logger.level = Logger::INFO
-#$logger.level = Logger::DEBUG
+$logger.level = Logger::DEBUG
 
 $logger.formatter = proc do |severity, datetime, progname, msg|
    "#{msg}\n"
