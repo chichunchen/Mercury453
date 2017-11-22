@@ -140,12 +140,41 @@ class TestAcceptance < Minitest::Test
   def test_4
     # Test that the system gracefully provides error message when attempting to
     # add a file that doesn't exist
+    
+          
+    
+    
   end  
   
   #----------------------------------------------------------------------
   def test_5
     # Stress test, a 1000 iteration loop of adding and committing changes to 
     # a single file 
+    
+    `'../../hg' create`
+    # TODO make 1000, it is slow
+    (0..10).each_with_index do |e,i|    
+      open('file1.txt', 'a') { |f|
+        f.puts("\n" + i.to_s)
+      }
+      `'../../hg' add file1.txt`
+      `'../../hg' commit`        
+    end
+    result = `'../../hg' history`
+    assert_equal(result, 
+      "Revision #0; Parent(s): []\n" +
+      "Revision #1; Parent(s): [0]\n" +
+      "Revision #2; Parent(s): [1]\n" +
+      "Revision #3; Parent(s): [2]\n" +
+      "Revision #4; Parent(s): [3]\n" +
+      "Revision #5; Parent(s): [4]\n" +
+      "Revision #6; Parent(s): [5]\n" +
+      "Revision #7; Parent(s): [6]\n" +
+      "Revision #8; Parent(s): [7]\n" +
+      "Revision #9; Parent(s): [8]\n" +
+      "Revision #10; Parent(s): [9]\n" +
+      "Revision #11; Parent(s): [10]\n"
+      )      
   end  
   
   #----------------------------------------------------------------------
@@ -159,6 +188,8 @@ class TestAcceptance < Minitest::Test
   def test_7
     # Tests merge. First commits first revision and second revision. Makes 
     # changes from first revision and then merges in as a third revision.
+    
+    
   end  
   
   #----------------------------------------------------------------------

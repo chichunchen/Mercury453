@@ -342,15 +342,12 @@ module Repository
     end
 
     $logger.info(dag.history)
-    #text = File.read('.repository/commit_history.txt')
-    #puts(text)
+
   end
 
   #--------------------------------------------------------------------
   def Repository.cur_rev()
     # Returns current revision
-    #text = File.read('.repository/current_revision.txt')
-    #return text.to_i()
     Manifest.new.current_revision
   end
   

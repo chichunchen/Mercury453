@@ -106,7 +106,7 @@ class TestRepository < Minitest::Test
     Repository.create()
 
     # should be 1000, since we wrote 1000 in our acceptance test
-    (0..100).each do |e|    
+    (0..10).each do |e|    
       filename = '.test_file' + e.to_s
       FileUtils.touch(filename)
       a = [filename]
