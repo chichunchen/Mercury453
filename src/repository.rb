@@ -375,6 +375,13 @@ if __FILE__ == $0
       Repository.checkout(ARGV[1])
     when 'commit'
       Repository.commit()
+      if ARGV.length != 1  # is it a commit with files?
+          if Repository.add(ARGV[1..ARGV.length]) # only if add is successful do the commit
+              Repository.commit()
+          end
+      else
+          Repository.commit()
+      end  
     when 'add'
       Repository.add(ARGV[1..ARGV.length])
     when 'delete'
