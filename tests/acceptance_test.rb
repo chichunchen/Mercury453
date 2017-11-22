@@ -287,6 +287,21 @@ Commands:
     result = `'../../hg' -h`
     assert_equal(result, help_str) 
   end  
+  
+    #----------------------------------------------------------------------
+  def test_10
+    # Simple test of commit with file arg.
+
+    result = `'../../hg' create`
+    `touch file1.txt`
+    result = `'../../hg' add file1.txt`
+    result = `'../../hg' commit file1.txt`
+    assert_equal(result, 
+      "INFO: updating staged file: file1.txt\n" + 
+      "added file1.txt to staging area\n" + 
+      "Committed revision 1\n")
+  end
+
 end
 
 
