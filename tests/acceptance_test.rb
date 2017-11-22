@@ -182,6 +182,20 @@ class TestAcceptance < Minitest::Test
     # Test checkout by committing two changes, then restoring to the first
     # version
     
+    `'../../hg' create`
+    open('file1.txt', 'w') { |f|
+        f.puts("hello I am version 1")
+    }
+    `'../../hg' add file1.txt`
+    `'../../hg' commit`
+    open('file1.txt', 'w') { |f|
+        f.puts("hello I am version 2")
+    }
+    `'../../hg' add file1.txt`
+    `'../../hg' commit`
+    result =    `'../../hg' checkout 1`
+    txt = File.read('file1.txt')
+    assert_equal(txt, "hello I am version 1\n")
   end  
   
   #----------------------------------------------------------------------
