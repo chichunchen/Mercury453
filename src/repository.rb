@@ -167,26 +167,26 @@ module Repository
     end
     
     if !File.exist?('.repository')
-      $logger.warn('\nNOT IN A REPOSITORY...add ignored\n')
+      $logger.warn('NOT IN A REPOSITORY...add ignored')
       return false
     end
     
     if files_list.nil?
-      $logger.warn('\nWARNING: add called without any files.\n')
+      $logger.warn('WARNING: add called without any files.')
       return false
     end
 
     ret_val = true
     files_list.each do |e|
       if !File.exist?(e)
-        $logger.warn('\nWARNING: ' + e + ' is not a file\n')
+        $logger.warn('WARNING: ' + e + ' is not a file')
         ret_val = false
         next
       end
       
       # check if file is already staged
       if File.exist?('.repository/.stage/' + e)
-        $logger.info('\nINFO: updating staged file: ' + e)  
+        $logger.info('INFO: updating staged file: ' + e)  
         FileUtils.rm('.repository/.stage/' + e)
       end
       

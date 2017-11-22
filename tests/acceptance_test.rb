@@ -141,7 +141,10 @@ class TestAcceptance < Minitest::Test
     # Test that the system gracefully provides error message when attempting to
     # add a file that doesn't exist
 
-    
+    result = `'../../hg' create`
+    result = `'../../hg' add filez.txt`
+    assert_equal(result,     
+      "WARNING: filez.txt is not a file\n")    
   end  
   
   #----------------------------------------------------------------------
@@ -245,9 +248,6 @@ THE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMP
   #----------------------------------------------------------------------
   def test_9
     # Tests that the help command works.
-    
-    $logger.info("------------------")
-    $logger.info("ACCEPTANCE TEST 9")
 
     help_str =  "
    #####                                          #
