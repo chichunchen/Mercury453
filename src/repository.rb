@@ -103,7 +103,7 @@ module Repository
   end
 
   #--------------------------------------------------------------------
-  def Repository.commit()
+  def Repository.commit(repo_to_pull_in=nil)
     # Description:    commit the specified files or all outstanding changes
     # Precondition:   files are staged for commit and no argument is provided, 
     #                 or no files are staged and some are provided as arguments
@@ -119,31 +119,35 @@ module Repository
       return false
     end
 
-    files = Dir.entries(".repository/.stage/").reject {|e| File.directory?(e)}.to_a
-    if files.size == 0
-      $logger.warn('WARNING: no files staged to commit, commit ignored')
-      return false
+    if repo_to_pull_in == nil
+      files = Dir.entries(".repository/.stage/").reject {|e| File.directory?(e)}.to_a
+      if files.size == 0
+        $logger.warn('WARNING: no files staged to commit, commit ignored')
+        return false
+      end
+      cur_rev_int = Repository.cur_rev()
+      new_rev_int = dag.nextrevision()
+      
+      # note, new_rev_hash will likely be moved to manifest
+      #new_rev_hash = SecureRandom.hex
+  
+      $logger.debug('cur_rev_int: ' + cur_rev_int.to_s)
+      $logger.debug('new_rev_int: ' + new_rev_int.to_s)
+      
+      #$logger.debug(files)
+      manifest = Manifest.new('.')
+      manifest.commit('.repository/.stage/', files, new_rev_int)
+      #open('.repository/commit_history.txt', 'a') { |f|
+      #   f.puts("\n" + new_rev_int.to_s)
+      #}
+  
+      dag.add_revision(new_rev_int, cur_rev_int)
+      FileUtils.rm_rf('.repository/.stage/.') 
+      $logger.info("Committed revision #{new_rev_int}")
+      return new_rev_int
+    else
+      
     end
-    cur_rev_int = Repository.cur_rev()
-    new_rev_int = dag.nextrevision()
-    
-    # note, new_rev_hash will likely be moved to manifest
-    #new_rev_hash = SecureRandom.hex
-
-    $logger.debug('cur_rev_int: ' + cur_rev_int.to_s)
-    $logger.debug('new_rev_int: ' + new_rev_int.to_s)
-    
-    #$logger.debug(files)
-    manifest = Manifest.new('.')
-    manifest.commit('.repository/.stage/', files, new_rev_int)
-    #open('.repository/commit_history.txt', 'a') { |f|
-    #   f.puts("\n" + new_rev_int.to_s)
-    #}
-
-    dag.add_revision(new_rev_int, cur_rev_int)
-    FileUtils.rm_rf('.repository/.stage/.') 
-    $logger.info("Committed revision #{new_rev_int}")
-    return new_rev_int
   end
 
   #--------------------------------------------------------------------
@@ -154,6 +158,7 @@ module Repository
     # Main procedure: add files to list of staged files
     # Exception:      if a file does not exist, print a warning, files that do 
     #                 exist will be staged
+    # return value:   false if any file fails to be added, true otherwise
 
     if !File.exist?('.repository')
       $logger.warn('WARNING: no local repository exists...use create')
@@ -163,17 +168,19 @@ module Repository
     
     if !File.exist?('.repository')
       $logger.warn('\nNOT IN A REPOSITORY...add ignored\n')
-      return
+      return false
     end
     
     if files_list.nil?
       $logger.warn('\nWARNING: add called without any files.\n')
-      return
+      return false
     end
 
+    ret_val = true
     files_list.each do |e|
       if !File.exist?(e)
         $logger.warn('\nWARNING: ' + e + ' is not a file\n')
+        ret_val = false
         next
       end
       
@@ -186,6 +193,7 @@ module Repository
       FileUtils.cp(e, '.repository/.stage/' + e)      
       $logger.info('added ' + e + ' to staging area')
     end
+    return ret_val
   end
 
   #--------------------------------------------------------------------

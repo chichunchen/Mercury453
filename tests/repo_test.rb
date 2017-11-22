@@ -181,6 +181,7 @@ class TestRepository < Minitest::Test
   end
 
   # Repository doesn't have version yet
+  # hg is handling version, not sure if it makes sense to move to repository
   def test_version_message
     Repository.create()
     FileUtils.touch('.test_file1')
@@ -191,10 +192,12 @@ class TestRepository < Minitest::Test
   end
 
   # Repository doesn't have help yet
+  # hg is handling help, not sure if it makes sense to move to repository
   def test_help_message
     Repository.create()
     #Repository.help()
   end
+  
   def test_merge_history
     Dir.mkdir('repo1')
     Dir.chdir('repo1') do

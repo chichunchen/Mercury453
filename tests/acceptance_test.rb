@@ -39,7 +39,7 @@ class TestAcceptance < Minitest::Test
   #----------------------------------------------------------------------
   def test_1
     # Simple test of create, status, add, delete, commit, and history.
-    
+
     result = `'../../hg' create`
     assert_equal(result, "NEW REPOSITORY CREATED\n")    
 
@@ -124,7 +124,7 @@ class TestAcceptance < Minitest::Test
   def test_3
     # Test that the system gracefully provides error message when attempting a 
     # commit when there are no staged changes
-    
+
     result = `'../../hg' commit`
     assert_equal(result,     
       "WARNING: no local repository exists...use create\n" +
@@ -140,9 +140,7 @@ class TestAcceptance < Minitest::Test
   def test_4
     # Test that the system gracefully provides error message when attempting to
     # add a file that doesn't exist
-    
-          
-    
+
     
   end  
   
@@ -181,7 +179,7 @@ class TestAcceptance < Minitest::Test
   def test_6
     # Test checkout by committing two changes, then restoring to the first
     # version
-    
+
     `'../../hg' create`
     open('file1.txt', 'w') { |f|
         f.puts("hello I am version 1")
@@ -203,7 +201,25 @@ class TestAcceptance < Minitest::Test
     # Tests merge. First commits first revision and second revision. Makes 
     # changes from first revision and then merges in as a third revision.
     
+    Dir.mkdir('repo1')
+    Dir.chdir('repo1') do
+        `'../../../hg' create`
+        FileUtils.touch('file1')
+        `'../../../hg' add file1`
+        `'../../../hg' commit`
+    end
+    Dir.mkdir('repo2')
+    Dir.chdir('repo2') do
+        `'../../../hg' create`
+        FileUtils.touch('file2')
+        `'../../../hg' add file2`
+        `'../../../hg' commit`
+        `'../../../hg' merge '../repo1'`
+        assert(File.exist?('file1') && File.exist?('file2'), "Merge should incorporate all non-conflicting files")
+    end
     
+    FileUtils.rm_rf('repo1')
+    FileUtils.rm_rf('repo2')
   end  
   
   #----------------------------------------------------------------------
@@ -230,6 +246,9 @@ THE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMP
   def test_9
     # Tests that the help command works.
     
+    $logger.info("------------------")
+    $logger.info("ACCEPTANCE TEST 9")
+
     help_str =  "
    #####                                          #
   #     #  #####    ####   #    #  #####          #    #
@@ -267,10 +286,7 @@ Commands:
 
     result = `'../../hg' -h`
     assert_equal(result, help_str) 
-
   end  
-  
-  
 end
 
 

@@ -55,8 +55,13 @@ if (cmd)
     Repository.delete(args)
   
   elsif cmd == "commit"
-    Repository.commit()
-  
+    if args.size != 0  # is it a commit with files?
+      if Repository.add(args) # only if add is successful do the commit
+        Repository.commit()
+      end
+    else
+      Repository.commit()
+    end    
   elsif cmd == "stat" or cmd == "status"
     Repository.status()
   
