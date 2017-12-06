@@ -270,6 +270,11 @@ module Repository
 
     
     Dir.chdir(path_str) do
+        if !File.exist?('.repository')
+           $logger.warn('WARNING: no local repository exists in merge path')
+           $logger.warn('WARNING: merge ignored')
+           return false
+        end
         man = Manifest.new(path_str)
         other_cur = man.current_revision
         thisdag = dag(path_str)
