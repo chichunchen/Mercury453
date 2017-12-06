@@ -168,7 +168,7 @@ module Repository
     # Main procedure: add files to list of staged files
     # Exception:      if a file does not exist, print a warning, files that do 
     #                 exist will be staged
-    # return value:   false if any file fails to be added, true otherwise
+    # return value:   true if any file is added, false otherwise
 
     if !File.exist?('.repository')
       $logger.warn('WARNING: no local repository exists...use create')
@@ -186,11 +186,10 @@ module Repository
       return false
     end
 
-    ret_val = true
+    ret_val = false
     files_list.each do |e|
       if !File.exist?(e)
         $logger.warn('WARNING: ' + e + ' is not a file')
-        ret_val = false
         next
       end
       
@@ -202,6 +201,8 @@ module Repository
       
       FileUtils.cp(e, '.repository/.stage/' + e)      
       $logger.info('added ' + e + ' to staging area')
+      ret_val = true
+
     end
     return ret_val
   end
