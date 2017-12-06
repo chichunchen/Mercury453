@@ -225,7 +225,7 @@ module Repository
 
     files_list.each do |e|
       if !File.exist?('.repository/.stage/' + e)
-        $logger.warn('\nWARNING: ' + e + ' is not currently staged\n')
+        $logger.warn('WARNING: ' + e + ' is not currently staged')
         next
       else
         FileUtils.rm('.repository/.stage/' + e)        
@@ -261,6 +261,14 @@ module Repository
     identical = true
     path_str = File.absolute_path(path_str, Dir.pwd)
     #debug = nil
+
+    if !Dir.exist?(path_str)
+      $logger.warn('WARNING: no such path')
+      $logger.warn('WARNING: merge ignored')
+      return false
+    end
+
+    
     Dir.chdir(path_str) do
         man = Manifest.new(path_str)
         other_cur = man.current_revision
