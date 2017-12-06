@@ -88,7 +88,8 @@ module Repository
       return false
     end
 
-    if revision_str.to_i.to_s != revision_str 
+    # check that the revision_str is either an int or a str of an int
+    if revision_str.to_i.to_s != revision_str.to_s
       $logger.warn('WARNING: checkout called without valid revision')
       $logger.warn('WARNING: checkout ignored')
       return false
