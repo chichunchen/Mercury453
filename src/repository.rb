@@ -87,7 +87,13 @@ module Repository
       $logger.warn('WARNING: checkout ignored')
       return false
     end
-    
+
+    if revision_str.to_i.to_s != revision_str 
+      $logger.warn('WARNING: checkout called without valid revision')
+      $logger.warn('WARNING: checkout ignored')
+      return false
+    end
+
     # Check if there are staged files, if so, don't allow checkout.
     files = Dir[".repository/.stage/*"]
     if files.size != 0
@@ -98,8 +104,11 @@ module Repository
     
     
     manifest = Manifest.new()
-    manifest.checkout(Integer(revision_str))
-
+    begin
+      manifest.checkout(Integer(revision_str))
+    rescue
+      $logger.error("ERROR: checkout failed, revision does not exist")
+    end
   end
 
   #--------------------------------------------------------------------
