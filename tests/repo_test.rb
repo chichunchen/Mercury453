@@ -223,6 +223,34 @@ class TestRepository < Minitest::Test
  
   end
 
+  def test_clone_merge
+    output, ret = Repository.collect_output do
+        Dir.mkdir('repo1')
+        Dir.chdir('repo1') do
+            Repository.create()
+            File.open('f1.txt','w') do |f|
+                f.write("v1")
+            end
+            Repository.add(['f1.txt'])
+            Repository.commit()
+        end
+        `cp -r repo1/ repo2/`
+        Dir.chdir('repo1') do
+            Repository.create()
+            File.open('f2.txt','w') do |f|
+                f.write("v2")
+            end
+            Repository.add(['f2.txt'])
+            Repository.commit()
+        end
+        Dir.chdir('repo2') do
+            Repository.merge('../repo1')
+        end
+    end
+    assert(File.exist?('repo2/f1.txt'))
+    assert(File.exist?('repo2/f2.txt'))
+  end
+
 end
 
 

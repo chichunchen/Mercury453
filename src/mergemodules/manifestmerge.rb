@@ -77,6 +77,9 @@ module ManifestMerge
             newdata.add_content(revmap[c.revnum], c.fname)
             r = Revlog.new(c.fname, @basedir)
             myrev = revmap[c.revnum]
+            if myrev != newrev
+                next
+            end
             myfilecontent = StringIO.new(rls[c.fname].content(c.revnum)) 
             if r.created?
                 r.commit(myrev, myfilecontent)
@@ -192,6 +195,7 @@ module ManifestMerge
         end
 
         #TODO: complete, check for conflicts
+        $logger.debug("Adding new manifest version: #{newdata}")
         add_revision(newdata)
         checkout(newrevision)
         return conflicts

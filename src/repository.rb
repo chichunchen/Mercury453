@@ -253,21 +253,23 @@ module Repository
       return false
     end
 
-    mydag = dag
-    myman = Manifest.new
-    myrevs = mydag.each_revision(myman).to_a
-    revmap = {}
-    other_cur = nil
-    identical = true
-    path_str = File.absolute_path(path_str, Dir.pwd)
-    #debug = nil
-
     if !Dir.exist?(path_str)
       $logger.warn('WARNING: no such path')
       $logger.warn('WARNING: merge ignored')
       return false
     end
 
+    mydag = dag
+    #mydag.watch("repo2")
+    $logger.debug("mydag has base #{mydag.base}")
+    myman = Manifest.new
+    myrevs = mydag.each_revision(myman).to_a
+    revmap = {}
+    other_cur = nil
+    cur_rev_n = Repository.cur_rev
+    identical = true
+    path_str = File.absolute_path(path_str, Dir.pwd)
+    #debug = nil
     
     Dir.chdir(path_str) do
         if !File.exist?('.repository')
@@ -278,6 +280,7 @@ module Repository
         man = Manifest.new(path_str)
         other_cur = man.current_revision
         thisdag = dag(path_str)
+        #thisdag.watch("repo1")
         $logger.debug("thisdag: #{thisdag}, for #{path_str}")
         thisdag.each_revision(man) do |revision|
             match = myrevs.find {|r| r.uuid == revision.uuid}
@@ -287,6 +290,7 @@ module Repository
             else
                 identical = false
                 newrev = mydag.nextrevision
+                $logger.debug("mydag: #{mydag}, newrev: #{newrev}")
                 myman.fetch_from(man,revision.revnum,newrev,revmap)
                 mydag.merge_revision_under(newrev, thisdag.parents(revision.revnum).map {|r| revmap[r]})
             end
@@ -296,8 +300,12 @@ module Repository
         $logger.warn("The provided repository is fully contained within this one; there is nothing to fetch.")
     else
         target_rev = revmap[other_cur]
-        $logger.debug("About to merge; mydag: #{mydag}")
-        conflicts = myman.merge(target_rev, mydag.nextrevision, mydag)
+        new_rev = mydag.nextrevision
+        $logger.debug("About to merge; mydag: #{mydag}, nextrev: #{new_rev}")
+        conflicts = myman.merge(target_rev, new_rev, mydag)
+        mydag.merge_revision_under(new_rev,[target_rev,cur_rev_n])
+        $logger.debug("After merge, mydag: #{mydag}")
+        $logger.debug(mydag.history)
         conflicts.each do |fname|
             $logger.warn("Merge conflict in #{fname}")
         end
