@@ -1,4 +1,13 @@
-# CSC453_Assignment3
+# Mercury453
+A [Mercury](https://www.mercurial-scm.org/) clone that supports:
+- create
+- checkout `<revision>`
+- add `<file>`
+- delete `<file>`
+- commit `[<files>]`
+- status
+- history
+- merge `<path>`
 
 ## Install
 ```
@@ -23,3 +32,6 @@ Merging with a repository will first fetch ALL commits not contained in the curr
 ```hg commit <files>``` is equivalent to ```hg add <files>``` immediately followed by ```hg commit```.
 
 Commits do not have commit messages, nor authors, nor timestamps. They have a revision number and either one parent or two (in the case of a merge).
+
+## More Details
+https://www.slideshare.net/slideshow/embed_code/key/KGzZQYdAmlZusX
